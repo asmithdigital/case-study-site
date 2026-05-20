@@ -323,22 +323,54 @@ function SlackV({ go }) {
 function CostV({ go }) { const items = [{ l: "Claude Pro", v: "$20/mo", c: T.navy }, { l: "Figma", v: "Free", c: T.teal }, { l: "GitHub Pages", v: "Free", c: T.teal }, { l: "Hosting", v: "Free", c: T.teal }]; return <div><Tags rs={["all"]} /><H2>Cost</H2><div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, margin: "22px 0" }}>{items.map((x, i) => <div key={i} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 10, padding: "20px 16px", textAlign: "center" }}><div style={{ fontFamily: ff, fontSize: 12, color: T.muted, textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 5 }}>{x.l}</div><div style={{ fontFamily: ff, fontSize: 26, fontWeight: 700, color: x.c }}>{x.v}</div></div>)}</div><P s={{ color: T.muted, fontSize: 15 }}>Plus ~$5–10 in Anthropic API credits for the Slack bot answer synthesis.</P><Nav prev={SS[8]} next={SS[10]} go={go} /></div>; }
 
 function BenchV({ go }) { return <div><Tags rs={["ux", "service", "pm"]} /><H2>Benchmarking — measuring whether changes work</H2>
-  <P>Benchmarking is about capturing the state of a product before and after a change, and measuring the difference. Claude's Chrome scanning capability creates a natural baseline/comparison workflow that connects directly to the prototyping and journey management parts of this system.</P>
-  <H3>How it works</H3>
-  <P>When Claude crawls a live product through Chrome, it captures a detailed baseline — every screen, every form field, every friction point, every step count. After a change ships, the same crawl captures the new state. The difference between them — combined with analytics and user testing data — is how you measure whether the change worked.</P>
-  <H3>What Claude can automate</H3>
-  <Bul items={["Baseline capture — Claude documents the full flow before a change: screen count, step count, form fields, friction points, time estimates", "Post-change capture — after deployment, the same Chrome scan documents the new flow and generates a structured diff", "Journey map comparison — baseline and post-change data both feed into the journey management app for side-by-side comparison", "Automated reporting — Claude generates a comparison report showing metrics like step reduction and friction points resolved", "Competitor tracking — the same crawl approach works for monitoring competitor products over time"]} />
-  <H3>What requires human measurement</H3>
-  <P>Claude captures the product state, but UX benchmarking also requires measuring real human responses — task completion rates, time on task, error rates, satisfaction scores. These need consistent usability tests with real participants. The A/B test plans generated in the Prototyping section provide the human-side measurement that complements Claude's automated product-state capture.</P>
-  <H3>The benchmarking loop</H3>
-  <Step n={1} title="Baseline crawl" desc="Claude scans the live product through Chrome before any changes. Documents everything. Pushes the baseline to the journey management app." />
-  <Step n={2} title="Design and prototype" desc="Use the baseline data to identify what to improve. Design the change in Figma. Prototype it. Run user testing with A/B variants." />
-  <Step n={3} title="Ship the change" desc="Push the approved design to code. Deploy to production." />
-  <Step n={4} title="Post-change crawl" desc="Claude scans the live product again. Same flow, same documentation approach. Captures the new state." />
-  <Step n={5} title="Compare and measure" desc="Claude generates a diff between baseline and post-change. Combine with analytics and user testing results to measure impact." />
-  <Step n={6} title="Update journey data" desc="Push the post-change findings to the journey management app. Pain points resolved get marked. New issues get documented." />
-  <Box type="info" label="Connecting to analytics">The Chrome crawl captures the product state. Analytics platforms capture the user behaviour. The journey management app brings both together — Claude processes analytics exports alongside crawl data for the complete picture.</Box>
-  <Box type="future" label="Automated benchmarking pipeline">With scheduled Chrome crawls, Claude could maintain an ongoing record of the product state, automatically detecting when something changes in production — even unplanned changes. An early warning system for regression.</Box>
+  <P>Benchmarking is about capturing the state of a product before and after a change, and measuring the difference. This section explains what Claude can automate today, what requires manual steps, and what could be automated with further development.</P>
+  <H3>What Claude can do now</H3>
+  <P>Claude's Chrome scanning captures a detailed product state — every screen, form field, friction point, and step count. This works as a baseline before a change and a comparison after. The diff between them shows what changed at the product level.</P>
+  <Bul items={[
+    "Baseline capture — Claude scans the live product through Chrome and documents the full flow. This becomes the \"before\" snapshot, pushed to the journey management app as structured JSON",
+    "Post-change capture — after deployment, the same Chrome scan documents the new flow. Claude can compare the two and generate a diff: what was added, removed, or changed",
+    "Journey map comparison — both snapshots feed into the journey management app, so you can see before/after side by side with scored pain points",
+    "Competitor tracking — the same crawl approach works for monitoring competitor products over time, detecting when they add features or change flows",
+    "Automated reporting — Claude generates a structured comparison showing step reduction, friction points resolved, and new issues introduced"
+  ]} />
+  <H3>What requires manual steps today</H3>
+  <P>Claude captures the product state, but UX benchmarking also requires two other data sources: analytics data (page views, completion rates, drop-offs, time on task) and user testing data (task completion, satisfaction scores, error rates). Neither of these is connected to Claude automatically.</P>
+  <P>The current manual workflow:</P>
+  <Step n={1} title="Export analytics data" desc="Export a CSV or report from Google Analytics, Amplitude, Hotjar, or whatever analytics platform you use. This gives you the quantitative behaviour data — completion rates, drop-offs, session duration." />
+  <Step n={2} title="Run user testing" desc="Use the A/B test plans generated in the Prototyping section to run moderated or unmoderated tests in Askable or UserTesting.com. This gives you the qualitative human response data — task completion, satisfaction, perceived effort." />
+  <Step n={3} title="Feed everything into Claude" desc="Paste the analytics export and the user testing results into Claude alongside the Chrome crawl data. Claude processes all three sources together and generates updated journey JSON with revised pain points, new severity scores, and evidence tags." />
+  <Step n={4} title="Push to the journey management app" desc="Claude Code pushes the updated JSON. The app rebuilds with the new data. Pain points resolved get marked. New issues get documented. The journey map evolves." />
+  <Step n={5} title="Report the results" desc="Claude generates a comparison summary: before vs after metrics, what improved, what didn't, and recommended next steps. This can be shared directly or fed into TheyDo for formal reporting." />
+  <H3>What could be automated with development work</H3>
+  <P>The manual steps above could be reduced with API integrations. This would require working with a developer to set up:</P>
+  <Bul items={[
+    "Analytics API connection — Claude Code could read directly from Google Analytics or Amplitude APIs on a scheduled basis, pulling completion rates and drop-off data without manual exports. A developer would need to set up the API authentication and a scheduled script.",
+    "Scheduled Chrome crawls — instead of manually triggering crawls, a scheduled job could run Claude through the same product flow weekly or after each deployment, automatically capturing the new state and flagging changes. This would require a server-side script using Claude Code.",
+    "Automated diff and alerting — when a scheduled crawl detects a change (a new screen, a removed field, a different flow), it could automatically push a notification to Slack via the bot, alerting the team without anyone having to ask.",
+    "User testing platform integration — if Askable or UserTesting.com build MCP connectors or open their APIs, test results could flow back into Claude automatically. Neither has this today."
+  ]} />
+  <P>All of these are technically possible but none are built. They would require development time to set up the API connections, authentication, and scheduling. The manual workflow works today and is how most teams operate — the automation is an optimisation for later.</P>
+  <H3>How TheyDo fits into benchmarking</H3>
+  <P>If TheyDo is approved, it becomes the enterprise layer for benchmarking data:</P>
+  <Bul items={[
+    "TheyDo's daily S3 export (enterprise feature) gives Claude Code access to all journey data in a structured Parquet format. Claude could read the S3 bucket, compare against the latest Chrome crawl, and identify discrepancies between what TheyDo says the journey looks like and what the live product actually does.",
+    "TheyDo's Qualtrics integration means survey data from benchmarking studies flows into TheyDo automatically, where it's scored and tagged against journeys. Claude can then read that data via the S3 export to include it in the analysis.",
+    "TheyDo's executive dashboards provide the reporting layer — once benchmarking data is in TheyDo, stakeholders see it in their existing dashboards without needing the custom journey management app.",
+    "The custom journey management app from this case study remains useful as the fast-publish layer — Chrome crawl data and quick research updates go there immediately, while the validated, scored data gets formally published to TheyDo."
+  ]} />
+  <P>The limitation is the same as elsewhere: data can come out of TheyDo but can't be pushed in programmatically. The custom app and TheyDo coexist — one is fast and Claude-integrated, the other is governed and enterprise-grade.</P>
+  <H3>Who's involved</H3>
+  <P>Benchmarking touches multiple roles:</P>
+  <Bul items={[
+    "Service Designers — run the Chrome baseline and post-change crawls, process research data, update journey maps",
+    "UX Designers — design the changes being measured, run or review the user testing",
+    "BAs — compare benchmarking results against Jira backlog, identify what to prioritise next",
+    "Product Managers — review the before/after comparison, decide whether to ship, iterate, or kill",
+    "Developers — needed if setting up analytics API connections or scheduled crawl automation",
+    "Stakeholders — consume the comparison reports through the journey management app, TheyDo dashboards, or Slack bot queries"
+  ]} />
+  <Box type="info" label="Connecting to analytics">The Chrome crawl captures the product state. Analytics platforms capture user behaviour. User testing captures human responses. Today these are combined manually by pasting exports into Claude. With API development, the analytics and crawl steps could be automated — but the user testing step will always require real participants.</Box>
+  <Box type="future" label="Automated benchmarking pipeline">With development investment, scheduled Chrome crawls and analytics API connections could create an always-on benchmarking system. Changes in production — even unplanned ones — would be detected automatically, compared against the last known state, and flagged in Slack. This requires a developer to build the scheduling and API layer.</Box>
   <Nav prev={SS[9]} next={SS[11]} go={go} /></div>; }
 
 function ToolsV({ go }) { return <div><Tags rs={["service", "ux", "pm", "dev"]} /><H2>TheyDo & ZeroHeight</H2>
