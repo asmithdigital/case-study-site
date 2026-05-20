@@ -18,6 +18,7 @@ const SS = [
   { id: "jm", l: "Journey Management", r: ["service", "pm", "ba", "stake"] },
   { id: "slack", l: "Slack Bot", r: ["all"] },
   { id: "cost", l: "Cost", r: ["all"] },
+  { id: "bench", l: "Benchmarking", r: ["ux", "service", "pm"] },
   { id: "tools", l: "TheyDo & ZeroHeight", r: ["service", "ux", "pm", "dev"] },
   { id: "next", l: "What's Next", r: ["all"] },
 ];
@@ -209,97 +210,114 @@ function JMV({ go }) { return <div><Tags rs={["service", "pm", "ba", "stake"]} /
   <Box type="future" label="TheyDo">TheyDo is a dedicated journey management platform being considered for the next financial year. It offers enterprise-grade journey mapping, opportunity prioritisation, and stakeholder reporting. TheyDo supports CSV and daily S3 data exports, which Claude could process and feed back into the workflow. See <button onClick={() => go("tools")} style={{ background: "none", border: "none", color: "#7c3aed", fontFamily: ff, fontSize: 15, fontWeight: 500, cursor: "pointer", padding: 0, textDecoration: "underline" }}>TheyDo & ZeroHeight</button> for more detail.</Box>
   <Nav prev={SS[6]} next={SS[8]} go={go} /></div>; }
 
-function SlackV({ go }) { return <div><Tags rs={["all"]} /><H2>Slack bot — making it all queryable</H2>
-  <P>The Slack bot is the most widely useful part of this system. While the design and research tools are used by EXD, the bot is for everyone — Product Managers, Engineers, Stakeholders, and anyone else who needs answers from design and research data without opening Figma, navigating a repo, or waiting for a designer to be available. It runs 24/7 whether or not anyone in EXD is online.</P>
-  <P>The bot searches across all connected data sources: Figma Design files (component names, pages, structure), FigJam boards (journey maps, stickies, workshop content), the GitHub JSON repos powering the design system docs and journey management application, and eventually Miro. It synthesises a single answer from everything it finds.</P>
+function SlackV({ go }) {
+  const QCard = ({ role, roleBg, roleColor, queries }) => <div style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 12, padding: "22px 24px", marginBottom: 14 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}><span style={{ fontFamily: ff, fontSize: 11.5, fontWeight: 600, padding: "3px 10px", borderRadius: 100, background: roleBg, color: roleColor }}>{role}</span></div>
+    {queries.map((q, i) => <div key={i} style={{ marginBottom: 14 }}>
+      <div style={{ background: T.navy, borderRadius: 8, padding: "10px 14px", marginBottom: 6 }}><span style={{ fontFamily: ff, fontSize: 13.5, color: "#5ce0b8", fontWeight: 500 }}>@UX Assistant</span><span style={{ fontFamily: ff, fontSize: 13.5, color: "rgba(255,255,255,.85)", marginLeft: 8 }}>{q.ask}</span></div>
+      <div style={{ fontFamily: ff, fontSize: 13.5, color: T.muted, paddingLeft: 14, borderLeft: `2px solid ${T.border}` }}>{q.returns}</div>
+    </div>)}
+  </div>;
 
-  <H3>What it can do today</H3>
-  <P>Tag <strong>@UX Assistant</strong> in <strong>#ux-requests</strong> with a question. Within 2 seconds you see an acknowledgement. Within 30 seconds, an answer appears in the thread.</P>
+  return <div><Tags rs={["all"]} /><H2>Slack bot — making it all queryable</H2>
+  <P>The Slack bot is the most widely useful part of this system. While the design and research tools are used by EXD, the bot is for everyone — Product Managers, Engineers, Stakeholders, and anyone else who needs answers from design and research data without opening Figma, navigating a repo, or waiting for a designer. It runs 24/7 whether or not anyone in EXD is online.</P>
+
+  <H3>How it works</H3>
+  <P>Tag <strong>@UX Assistant</strong> in <strong>#ux-requests</strong>. Within 2 seconds: acknowledgement. Within 30 seconds: a synthesised answer in the thread, pulled from Figma, FigJam, the design system JSON, and the journey management data.</P>
 
   <H3>Text queries — by role</H3>
-  <P><strong>Product Managers</strong></P>
-  <Bul items={[
-    '"What pain points have we documented in the sign-up journey?" → Returns a list of pain points from the journey JSON, each with a severity score, source (e.g. usability test, analytics), and the stage it relates to',
-    '"Do we have a component for a progress stepper?" → Searches the design system JSON and Figma file, returns matching components with their variants and usage guidelines',
-    '"What opportunities have been prioritised for the next sprint?" → Returns opportunities from the journey data scored by impact and effort',
+  <QCard role="Product Managers" roleBg="#fee2e2" roleColor="#991b1b" queries={[
+    { ask: "What pain points have we documented in the sign-up journey?", returns: "Returns pain points from journey JSON with severity scores, sources, and related stages" },
+    { ask: "Do we have a component for a progress stepper?", returns: "Searches design system JSON and Figma, returns matching components with variants and usage guidelines" },
+    { ask: "What opportunities have been prioritised for the next sprint?", returns: "Returns opportunities scored by impact and effort from journey data" },
   ]} />
-  <P><strong>Engineers</strong></P>
-  <Bul items={[
-    '"What are the colour tokens for form inputs?" → Returns the exact hex values, token names, and usage context from the design system JSON',
-    '"What props does the Button component have?" → Returns the component spec — variants (Primary, Secondary, Disabled), props, sizing, and spacing values',
-    '"What font stack are we using for headings?" → Returns the typography tokens with sizes, weights, and line heights',
+  <QCard role="Engineers" roleBg="#dbeafe" roleColor="#1e40af" queries={[
+    { ask: "What are the colour tokens for form inputs?", returns: "Returns exact hex values, token names, and usage context from design system JSON" },
+    { ask: "What props does the Button component have?", returns: "Returns component spec — variants, props, sizing, and spacing values" },
+    { ask: "What font stack are we using for headings?", returns: "Returns typography tokens with sizes, weights, and line heights" },
   ]} />
-  <P><strong>Stakeholders</strong></P>
-  <Bul items={[
-    '"What do we know about why users drop off before seeing a price?" → Aggregates insights from journey data, Chrome walkthrough findings, and research notes into a summary',
-    '"How many pain points have been identified across all journeys?" → Returns a count with a breakdown by journey and severity',
-    '"What has the research team found about the claims process?" → Searches FigJam boards and journey data for relevant findings',
+  <QCard role="Stakeholders" roleBg="#f3f4f6" roleColor="#374151" queries={[
+    { ask: "What do we know about why users drop off before seeing a price?", returns: "Aggregates insights from journey data, Chrome findings, and research notes into a summary" },
+    { ask: "How many pain points have been identified across all journeys?", returns: "Returns a count with breakdown by journey and severity" },
   ]} />
-  <P><strong>EXD Designers</strong></P>
-  <Bul items={[
-    '"Has anyone already mapped the claims journey?" → Searches FigJam boards and journey JSON, returns what exists and where to find it',
-    '"What components exist for a comparison view?" → Searches design system for relevant components, returns names, descriptions, and variants',
-    '"What were the key findings from the last round of usability testing?" → Returns insights with severity scores and sources',
+  <QCard role="EXD Designers" roleBg="#ede9fe" roleColor="#5b21b6" queries={[
+    { ask: "Has anyone already mapped the claims journey?", returns: "Searches FigJam boards and journey JSON, returns what exists and where to find it" },
+    { ask: "What components exist for a comparison view?", returns: "Searches design system for relevant components with names, descriptions, and variants" },
   ]} />
 
   <H3>Visual queries</H3>
-  <P>The bot returns images alongside text. When you ask about a component or screen, the bot calls the Figma REST API to generate a PNG of the actual design and posts it in the thread with the text answer. This means anyone can see real designs without Figma access.</P>
-  <Bul items={[
-    '"Show me the Button component" → Returns a rendered PNG of the component from Figma alongside the variant list and usage guidelines from JSON',
-    '"What does the Create Account screen look like?" → Returns a PNG of the actual product screen from Figma with annotations',
-    '"Show me the sign-up journey map" → Returns a PNG of the FigJam board or a specific section of it',
-    '"What does the emotion curve look like for the daily use journey?" → The bot generates a simple chart from the journey JSON and returns it as an image',
-  ]} />
+  <P>The bot returns images alongside text answers. When you ask about a component or screen, it calls the Figma REST API to generate a PNG of the actual design and posts it in the Slack thread.</P>
+  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "16px 0 24px" }}>
+    {[
+      { ask: "Show me the Button component", returns: "PNG from Figma + variant list + usage guidelines" },
+      { ask: "What does the Create Account screen look like?", returns: "PNG of the product screen from Figma" },
+      { ask: "Show me the sign-up journey map", returns: "PNG of the FigJam board section" },
+      { ask: "What does the emotion curve look like?", returns: "Chart generated from journey JSON" },
+    ].map((q, i) => <div key={i} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 10, padding: "16px 18px" }}>
+      <div style={{ fontFamily: ff, fontSize: 13, fontWeight: 600, color: T.navy, marginBottom: 6 }}>"{q.ask}"</div>
+      <div style={{ fontFamily: ff, fontSize: 13, color: T.muted }}>→ {q.returns}</div>
+    </div>)}
+  </div>
 
   <H3>Prompt generator</H3>
-  <P>When someone asks a question that requires creative work, the bot assembles all the relevant context and packages it as a ready-to-paste prompt for the Claude Desktop app. The designer doesn't need to manually look up pain points, find the right Figma URL, or check which components are available — the bot does it all and delivers a prompt they can copy and paste.</P>
-  <P><strong>Example:</strong> A PM asks "@UX Assistant I need to improve the sign-up form — what do we know and what should I do?"</P>
-  <P>The bot returns:</P>
-  <Bul items={[
-    "A summary of sign-up pain points from the journey data with severity scores",
-    "A PNG of the current sign-up screen from Figma",
-    "A list of relevant design system components available for use",
-    'A ready-to-paste prompt for Claude Desktop: "Look at this Figma file [URL]. The top 3 pain points identified in research are [X, Y, Z] with severity scores [high, medium, high]. Generate an improved version of the sign-up screen that addresses these issues using our existing design system components."',
-  ]} />
-  <P>The designer copies that prompt, opens the Desktop app, pastes it, and Claude builds the solution — already loaded with the right context, the right data, and the right constraints.</P>
-  <P><strong>More prompt generator examples:</strong></P>
-  <Bul items={[
-    '"I need a prototype that shows the improved checkout flow" → Returns Chrome walkthrough findings, journey pain points, current design system components, and a prompt for the Desktop app to generate the prototype',
-    '"Draft acceptance criteria for the progress bar feature" → Pulls pain points and opportunities from journey data, generates Jira-ready acceptance criteria with testable success metrics',
-    '"Prepare a brief for the new claims journey redesign" → Aggregates research findings, Chrome observations, journey data, and existing components into a structured brief',
-  ]} />
+  <P>When someone asks a question that requires creative work, the bot assembles all relevant context and packages it as a ready-to-paste prompt for the Claude Desktop app.</P>
+  <div style={{ background: T.white, border: `2px solid ${T.teal}22`, borderRadius: 14, padding: "28px", margin: "20px 0 24px" }}>
+    <div style={{ fontFamily: ff, fontSize: 12, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: T.teal, marginBottom: 12 }}>Example</div>
+    <div style={{ background: T.navy, borderRadius: 8, padding: "12px 16px", marginBottom: 16 }}><span style={{ fontFamily: ff, fontSize: 14, color: "#5ce0b8", fontWeight: 500 }}>@UX Assistant</span><span style={{ fontFamily: ff, fontSize: 14, color: "rgba(255,255,255,.85)", marginLeft: 8 }}>I need to improve the sign-up form — what do we know and what should I do?</span></div>
+    <div style={{ fontFamily: ff, fontSize: 14, fontWeight: 600, color: T.navy, marginBottom: 10 }}>The bot returns:</div>
+    <div style={{ display: "grid", gap: 8 }}>
+      {["Summary of sign-up pain points with severity scores", "PNG of the current sign-up screen from Figma", "List of relevant design system components", "A ready-to-paste prompt for Claude Desktop with pain points, Figma URL, and design system constraints pre-loaded"].map((item, i) => <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+        <div style={{ width: 22, height: 22, borderRadius: "50%", background: T.infoBg, color: T.teal, fontFamily: ff, fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>{i + 1}</div>
+        <div style={{ fontFamily: ff, fontSize: 14, color: T.text, lineHeight: 1.5 }}>{item}</div>
+      </div>)}
+    </div>
+    <P s={{ fontSize: 14, color: T.muted, marginTop: 14, marginBottom: 0 }}>The designer copies the prompt, opens the Desktop app, pastes it, and Claude builds the solution — already loaded with the right context.</P>
+  </div>
+  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "0 0 24px" }}>
+    {[
+      { ask: "I need a prototype for the improved checkout", returns: "Returns Chrome findings, pain points, components, and a Desktop app prompt" },
+      { ask: "Draft acceptance criteria for the progress bar", returns: "Generates Jira-ready criteria from journey data with testable metrics" },
+      { ask: "Prepare a brief for the claims redesign", returns: "Aggregates research, Chrome observations, journey data into a structured brief" },
+    ].map((q, i) => <div key={i} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 10, padding: "16px 18px" }}>
+      <div style={{ fontFamily: ff, fontSize: 13, fontWeight: 600, color: T.navy, marginBottom: 6 }}>"{q.ask}"</div>
+      <div style={{ fontFamily: ff, fontSize: 13, color: T.muted }}>→ {q.returns}</div>
+    </div>)}
+  </div>
 
   <H3>Change detection</H3>
-  <P>The bot can compare the current state of the Figma design system against the last published JSON to detect what's changed — new components, updated tokens, removed variants. Useful for keeping teams informed without manual changelogs.</P>
-  <Bul items={[
-    '"What changed in the design system this week?" → Compares current Figma file against published JSON, returns a summary of additions, removals, and modifications',
-    '"Are there any new components since last publish?" → Returns only new components not yet in the documentation',
-    '"Has anything been removed from the design system?" → Returns components or tokens present in the last publish but missing from Figma',
-  ]} />
+  <P>The bot compares the current Figma design system against the last published JSON to detect changes — new components, updated tokens, removed variants.</P>
+  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, margin: "16px 0 24px" }}>
+    {[
+      { ask: "What changed this week?", returns: "Diff of additions, removals, modifications" },
+      { ask: "Any new components?", returns: "Components in Figma not yet in docs" },
+      { ask: "Anything removed?", returns: "Components in docs but missing from Figma" },
+    ].map((q, i) => <div key={i} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 10, padding: "14px 16px" }}>
+      <div style={{ fontFamily: ff, fontSize: 12.5, fontWeight: 600, color: T.navy, marginBottom: 4 }}>"{q.ask}"</div>
+      <div style={{ fontFamily: ff, fontSize: 12.5, color: T.muted }}>→ {q.returns}</div>
+    </div>)}
+  </div>
 
-  <H3>What the bot CANNOT do</H3>
-  <P>These require Claude Pro or the Desktop app with MCP connectors:</P>
-  <Bul items={[
-    "Scan websites — needs the Chrome connector",
-    "Create Figma components or screens — needs the Figma MCP connector",
-    "Generate interactive prototypes — needs Chrome + Figma connectors",
-    "Push code to GitHub — needs Claude Code in the terminal",
-  ]} />
-  <P>The bot is the query and context layer. Claude Pro/Desktop is the creation layer. The bot makes the creation layer more effective by pre-loading it with the right data.</P>
+  <div style={{ background: T.navyBg, border: `1px solid ${T.navy}20`, borderRadius: 12, padding: "20px 24px", margin: "24px 0" }}>
+    <div style={{ fontFamily: ff, fontSize: 12, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: T.navy, marginBottom: 10 }}>What requires Claude Pro / Desktop</div>
+    <P s={{ fontSize: 14, marginBottom: 8 }}>The bot is the <strong>query and context layer</strong>. These require the <strong>creation layer</strong> (Claude Pro or Desktop with MCP connectors):</P>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+      {["Scan websites (Chrome connector)", "Create Figma components (Figma MCP)", "Generate prototypes (Chrome + Figma)", "Push code to GitHub (Claude Code)"].map((item, i) => <div key={i} style={{ fontFamily: ff, fontSize: 13, color: T.muted, background: T.white, borderRadius: 6, padding: "8px 12px" }}>{item}</div>)}
+    </div>
+  </div>
 
   <Label>Case Study</Label>
   <P>I prompted Claude to write the entire Slack bot — the Node.js script, the search functions for each data source, the Claude API integration for answer synthesis. Claude generated all the code. I tested it locally first (which only worked while my laptop was open), then deployed it to Render.com (free tier) with UptimeRobot keeping it alive 24/7. My only direct actions were creating the Slack workspace, creating the app at api.slack.com, and pasting environment variables into Render.com.</P>
-  <Box type="amber" label="One remaining step">The bot uses the Anthropic API to synthesise answers — separate from the Claude Pro subscription. Credits are loaded at console.anthropic.com. Estimated cost: $5–10 to get started, then roughly $1–2 per month in ongoing usage based on typical team query volumes (approximately 20–50 queries per day at ~$0.01–0.03 per query, depending on the amount of data searched and the length of the response). Once credits are loaded, the Slack channel will be shared for everyone to try.</Box>
+  <Box type="amber" label="One remaining step">The bot uses the Anthropic API to synthesise answers — separate from the Claude Pro subscription. Credits are loaded at console.anthropic.com. Estimated cost: $5–10 to get started, then roughly $1–2 per month in ongoing usage (approximately 20–50 queries per day at ~$0.01–0.03 per query). Once credits are loaded, the Slack channel will be shared for everyone to try.</Box>
   <CaseLink title="Slack Workspace" desc="The demo workspace with @UX Assistant bot connected and ready." url="https://uxaiexperiment.slack.com/" />
 
   <Label>How to Use It</Label>
-  <P>Go to <strong>#ux-requests</strong> in Slack. Tag <strong>@UX Assistant</strong> followed by your question. The more specific, the better the answer. You'll see an acknowledgement within 2 seconds and a full answer in the thread within 30 seconds.</P>
+  <P>Go to <strong>#ux-requests</strong> in Slack. Tag <strong>@UX Assistant</strong> followed by your question. The more specific, the better the answer.</P>
 
   <Label>Setup</Label>
   <P><strong>Create the Slack app:</strong> Go to api.slack.com/apps → Create New App → From Scratch → name it "UX Assistant" → select your workspace. Add bot token scopes (app_mentions:read, chat:write, channels:history). Enable Socket Mode. Subscribe to the app_mention event.</P>
-  <P><strong>Configure the bot:</strong> Create a .env file with your Slack tokens, Anthropic API key, Figma token, and GitHub details. The bot script searches four data sources in parallel — Figma, FigJam, Miro (enterprise placeholder), and the GitHub JSON repos.</P>
-  <P><strong>Deploy:</strong> Push to GitHub → deploy on Render.com (free tier) → add environment variables → set up UptimeRobot to ping the /health endpoint every 5 minutes.</P>
-  <P>This setup requires a developer or someone comfortable with Terminal, GitHub, and environment variables.</P>
+  <P><strong>Configure the bot:</strong> Create a .env file with your Slack tokens, Anthropic API key, Figma token, and GitHub details. The bot script searches four data sources in parallel.</P>
+  <P><strong>Deploy:</strong> Push to GitHub → deploy on Render.com (free tier) → add environment variables → set up UptimeRobot at /health endpoint.</P>
+  <P s={{ fontSize: 14, color: T.light }}>This setup requires a developer or someone comfortable with Terminal, GitHub, and environment variables.</P>
   <Nav prev={SS[7]} next={SS[9]} go={go} /></div>; }
 
 function CostV({ go }) { const items = [{ l: "Claude Pro", v: "$20/mo", c: T.navy }, { l: "Figma", v: "Free", c: T.teal }, { l: "GitHub Pages", v: "Free", c: T.teal }, { l: "Hosting", v: "Free", c: T.teal }]; return <div><Tags rs={["all"]} /><H2>Cost</H2><div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, margin: "22px 0" }}>{items.map((x, i) => <div key={i} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 10, padding: "20px 16px", textAlign: "center" }}><div style={{ fontFamily: ff, fontSize: 12, color: T.muted, textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 5 }}>{x.l}</div><div style={{ fontFamily: ff, fontSize: 26, fontWeight: 700, color: x.c }}>{x.v}</div></div>)}</div><P s={{ color: T.muted, fontSize: 15 }}>Plus ~$5–10 in Anthropic API credits for the Slack bot answer synthesis.</P><Nav prev={SS[8]} next={SS[10]} go={go} /></div>; }
@@ -367,7 +385,12 @@ export default function App() {
       <nav style={{ padding: "14px 0", flex: 1 }}>
         {SS.map((v, i) => <button key={v.id} onClick={() => go(v.id)} style={{ display: "flex", alignItems: "baseline", gap: 9, width: "100%", padding: "9px 22px", border: "none", cursor: "pointer", textAlign: "left", fontSize: 14.5, fontWeight: av === v.id ? 600 : 400, color: av === v.id ? "#fff" : "rgba(255,255,255,.78)", background: av === v.id ? "rgba(255,255,255,.1)" : "transparent", borderLeft: av === v.id ? `3px solid ${T.teal}` : "3px solid transparent", transition: "all .12s", fontFamily: ff }}><span style={{ fontSize: 11.5, fontWeight: 700, color: av === v.id ? "#5ce0b8" : "#5ce0b880", minWidth: 18 }}>{String(i + 1).padStart(2, "0")}</span>{v.l}</button>)}
       </nav>
-      <div style={{ padding: "14px 22px", borderTop: "1px solid rgba(255,255,255,.12)", fontSize: 12, color: "rgba(255,255,255,.45)" }}>May 2026</div>
+      <div style={{ padding: "14px 22px", borderTop: "1px solid rgba(255,255,255,.12)" }}>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,.55)", marginBottom: 2 }}>Created by</div>
+        <div style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,.75)" }}>Andrew Smith</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,.4)" }}>Manager, Digital UX</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,.35)", marginTop: 6 }}>May 2026</div>
+      </div>
     </aside>
     <main style={{ flex: 1, overflowY: "auto", background: T.bg }}><div style={{ maxWidth: 880, margin: "0 auto", padding: "44px 44px 100px" }}><V go={go} /></div></main>
   </div>;
