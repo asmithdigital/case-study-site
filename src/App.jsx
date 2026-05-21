@@ -1,4 +1,5 @@
 import { useState } from "react";
+import './App.css';
 
 const T = { navy: "#0c1c38", teal: "#0a6b54", bg: "#f8f7f4", white: "#fff", border: "#e2dfd8", text: "#1a1a1a", muted: "#4a4a4a", light: "#6b6b6b", amber: "#92400e", amberBg: "#fef9ec", infoBg: "#eef7f4", navyBg: "#eef0f4", futureBg: "#f5f3ff", futureBc: "#8b5cf6" };
 const R = {
@@ -32,9 +33,9 @@ const Label = ({ children }) => <div style={{ fontFamily: ff, fontSize: 12, font
 const P = ({ children, s }) => <p style={{ fontFamily: ff, marginBottom: 16, lineHeight: 1.7, fontSize: 16, color: T.text, ...s }}>{children}</p>;
 const Bul = ({ items }) => <ul style={{ margin: "12px 0 18px", paddingLeft: 0, listStyle: "none" }}>{items.map((x, i) => <li key={i} style={{ fontFamily: ff, position: "relative", paddingLeft: 18, marginBottom: 10, lineHeight: 1.65, fontSize: 16, color: T.text }}><span style={{ position: "absolute", left: 0, top: 10, width: 6, height: 6, borderRadius: "50%", background: T.teal, opacity: .45 }} />{x}</li>)}</ul>;
 const Box = ({ type, label, children }) => { const s = { amber: { bg: T.amberBg, bc: "#e8c547", lc: T.amber }, info: { bg: T.infoBg, bc: T.teal, lc: T.teal }, navy: { bg: T.navyBg, bc: T.navy, lc: T.navy }, future: { bg: T.futureBg, bc: T.futureBc, lc: "#7c3aed" } }[type] || { bg: T.infoBg, bc: T.teal, lc: T.teal }; return <div style={{ background: s.bg, borderLeft: `3px solid ${s.bc}`, borderRadius: "0 8px 8px 0", padding: "16px 20px", margin: "20px 0", fontSize: 15, lineHeight: 1.6, fontFamily: ff }}><div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: s.lc, marginBottom: 5 }}>{label}</div>{children}</div>; };
-const Prompt = ({ text }) => <div style={{ background: "#1a1f2e", color: "#e0e4ec", padding: "16px 20px", borderRadius: 8, fontSize: 14, lineHeight: 1.6, fontFamily: "monospace", margin: "16px 0 20px", whiteSpace: "pre-wrap", overflowX: "auto" }}>{text}</div>;
+const Prompt = ({ text }) => <div style={{ background: "#1a1f2e", color: "#e0e4ec", padding: "16px 20px", borderRadius: 8, fontSize: 14, lineHeight: 1.6, fontFamily: "monospace", margin: "16px 0 20px", whiteSpace: "pre-wrap", overflowX: "auto", maxWidth: "100%" }}>{text}</div>;
 const Step = ({ n, title, desc }) => <div style={{ display: "flex", gap: 14, marginBottom: 20 }}><div style={{ width: 30, height: 30, borderRadius: "50%", background: T.teal, color: "#fff", fontFamily: ff, fontSize: 14, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>{n}</div><div><div style={{ fontFamily: ff, fontSize: 16, fontWeight: 600, color: T.navy, marginBottom: 3 }}>{title}</div><P s={{ fontSize: 15, color: T.muted, marginBottom: 0 }}>{desc}</P></div></div>;
-const Nav = ({ prev, next, go }) => <div style={{ display: "flex", justifyContent: prev && next ? "space-between" : next ? "flex-end" : "flex-start", marginTop: 40, paddingTop: 22, borderTop: `1px solid ${T.border}` }}>{prev && <button onClick={() => go(prev.id)} style={{ fontFamily: ff, fontSize: 15, fontWeight: 500, color: T.teal, background: "none", border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 20px", cursor: "pointer" }}>← {prev.l}</button>}{next && <button onClick={() => go(next.id)} style={{ fontFamily: ff, fontSize: 15, fontWeight: 500, color: T.teal, background: "none", border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 20px", cursor: "pointer" }}>{next.l} →</button>}</div>;
+const Nav = ({ prev, next, go }) => <div className="nav-arrows" style={{ display: "flex", justifyContent: prev && next ? "space-between" : next ? "flex-end" : "flex-start", marginTop: 40, paddingTop: 22, borderTop: `1px solid ${T.border}` }}>{prev && <button onClick={() => go(prev.id)} style={{ fontFamily: ff, fontSize: 15, fontWeight: 500, color: T.teal, background: "none", border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 20px", cursor: "pointer" }}>← {prev.l}</button>}{next && <button onClick={() => go(next.id)} style={{ fontFamily: ff, fontSize: 15, fontWeight: 500, color: T.teal, background: "none", border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 20px", cursor: "pointer" }}>{next.l} →</button>}</div>;
 
 const CaseLink = ({ title, desc, url }) => <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: "block", background: T.white, border: `2px solid ${T.teal}22`, borderRadius: 12, padding: "20px 24px", marginBottom: 12, textDecoration: "none", transition: "border-color .15s" }} onMouseEnter={e => e.currentTarget.style.borderColor = T.teal} onMouseLeave={e => e.currentTarget.style.borderColor = `${T.teal}22`}>
   <div style={{ fontFamily: ff, fontSize: 16, fontWeight: 600, color: T.teal, marginBottom: 4 }}>{title} ↗</div>
@@ -247,7 +248,7 @@ function SlackV({ go }) {
 
   <H3>Visual queries</H3>
   <P>The bot returns images alongside text answers. When you ask about a component or screen, it calls the Figma REST API to generate a PNG of the actual design and posts it in the Slack thread.</P>
-  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "16px 0 24px" }}>
+  <div className="grid-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "16px 0 24px" }}>
     {[
       { ask: "Show me the Button component", returns: "PNG from Figma + variant list + usage guidelines" },
       { ask: "What does the Create Account screen look like?", returns: "PNG of the product screen from Figma" },
@@ -273,7 +274,7 @@ function SlackV({ go }) {
     </div>
     <P s={{ fontSize: 14, color: T.muted, marginTop: 14, marginBottom: 0 }}>The designer copies the prompt, opens the Desktop app, pastes it, and Claude builds the solution — already loaded with the right context.</P>
   </div>
-  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "0 0 24px" }}>
+  <div className="grid-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "0 0 24px" }}>
     {[
       { ask: "I need a prototype for the improved checkout", returns: "Returns Chrome findings, pain points, components, and a Desktop app prompt" },
       { ask: "Draft acceptance criteria for the progress bar", returns: "Generates Jira-ready criteria from journey data with testable metrics" },
@@ -286,7 +287,7 @@ function SlackV({ go }) {
 
   <H3>Change detection</H3>
   <P>The bot compares the current Figma design system against the last published JSON to detect changes — new components, updated tokens, removed variants.</P>
-  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, margin: "16px 0 24px" }}>
+  <div className="grid-3col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, margin: "16px 0 24px" }}>
     {[
       { ask: "What changed this week?", returns: "Diff of additions, removals, modifications" },
       { ask: "Any new components?", returns: "Components in Figma not yet in docs" },
@@ -300,7 +301,7 @@ function SlackV({ go }) {
   <div style={{ background: T.navyBg, border: `1px solid ${T.navy}20`, borderRadius: 12, padding: "20px 24px", margin: "24px 0" }}>
     <div style={{ fontFamily: ff, fontSize: 12, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: T.navy, marginBottom: 10 }}>What requires Claude Pro / Desktop</div>
     <P s={{ fontSize: 14, marginBottom: 8 }}>The bot is the <strong>query and context layer</strong>. These require the <strong>creation layer</strong> (Claude Pro or Desktop with MCP connectors):</P>
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+    <div className="grid-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
       {["Scan websites (Chrome connector)", "Create Figma components (Figma MCP)", "Generate prototypes (Chrome + Figma)", "Push code to GitHub (Claude Code)"].map((item, i) => <div key={i} style={{ fontFamily: ff, fontSize: 13, color: T.muted, background: T.white, borderRadius: 6, padding: "8px 12px" }}>{item}</div>)}
     </div>
   </div>
@@ -440,7 +441,7 @@ function AdminV({ go }) {
 
     <H3>Cost & Credits</H3>
     <P>The system runs on free tiers and a single $20/month Claude Pro subscription. The only additional spend is Anthropic API credits for the Slack bot's answer synthesis — loaded separately at console.anthropic.com.</P>
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 12, margin: "18px 0 10px" }}>{costItems.map((x, i) => <div key={i} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 10, padding: "18px 14px", textAlign: "center" }}><div style={{ fontFamily: ff, fontSize: 11.5, color: T.muted, textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 5 }}>{x.l}</div><div style={{ fontFamily: ff, fontSize: 22, fontWeight: 700, color: x.c }}>{x.v}</div></div>)}</div>
+    <div className="cost-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 12, margin: "18px 0 10px" }}>{costItems.map((x, i) => <div key={i} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 10, padding: "18px 14px", textAlign: "center" }}><div style={{ fontFamily: ff, fontSize: 11.5, color: T.muted, textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 5 }}>{x.l}</div><div style={{ fontFamily: ff, fontSize: 22, fontWeight: 700, color: x.c }}>{x.v}</div></div>)}</div>
     <P s={{ color: T.muted, fontSize: 15 }}>Plus ~$5–10 in Anthropic API credits to get the Slack bot started, then roughly $1–2/month at 20–50 queries per day.</P>
 
     <Nav prev={SS[11]} go={go} />
@@ -451,10 +452,18 @@ const VM = { intro: Intro, chrome: ChromeV, figma: FigmaV, figjam: FigJamV, prot
 
 export default function App() {
   const [av, setAv] = useState("intro");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const V = VM[av];
-  const go = (id) => { setAv(id); document.querySelector('main')?.scrollTo(0, 0); };
+  const go = (id) => { setAv(id); setSidebarOpen(false); document.querySelector('main')?.scrollTo(0, 0); };
   return <div style={{ display: "flex", height: "100vh", overflow: "hidden", fontFamily: ff, background: T.bg, color: T.text, fontSize: 16, lineHeight: 1.72 }}>
-    <aside style={{ width: 260, minWidth: 260, height: "100vh", background: T.navy, overflowY: "auto", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+    <div className={`sidebar-overlay${sidebarOpen ? " sidebar-open" : ""}`} onClick={() => setSidebarOpen(false)} />
+    <div className="mobile-topbar">
+      <button className="hamburger-btn" onClick={() => setSidebarOpen(s => !s)} aria-label="Open navigation menu">
+        <span /><span /><span />
+      </button>
+      <div className="mobile-topbar-title">EXD · Workflow Test</div>
+    </div>
+    <aside className={`sidebar${sidebarOpen ? " sidebar-open" : ""}`} style={{ width: 260, minWidth: 260, height: "100vh", background: T.navy, overflowY: "auto", display: "flex", flexDirection: "column", flexShrink: 0 }}>
       <div style={{ padding: "26px 22px 18px", borderBottom: "1px solid rgba(255,255,255,.08)" }}>
         <div style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: ".07em", textTransform: "uppercase", color: "rgba(255,255,255,.6)", marginBottom: 3 }}>EXD · Workflow Test</div>
         <div style={{ fontSize: 16, fontWeight: 600, color: "#fff" }}>Claude AI System</div>
@@ -469,6 +478,6 @@ export default function App() {
         <div style={{ fontSize: 11, color: "rgba(255,255,255,.35)", marginTop: 6 }}>May 2026</div>
       </div>
     </aside>
-    <main style={{ flex: 1, overflowY: "auto", background: T.bg }}><div style={{ maxWidth: 880, margin: "0 auto", padding: "44px 44px 100px" }}><V go={go} /></div></main>
+    <main className="main-content" style={{ flex: 1, overflowY: "auto", background: T.bg }}><div className="content-inner" style={{ maxWidth: 880, margin: "0 auto", padding: "44px 44px 100px" }}><V go={go} /></div></main>
   </div>;
 }
