@@ -17,11 +17,10 @@ const SS = [
   { id: "ds", l: "Design System Docs", r: ["dev", "ux", "pm"] },
   { id: "jm", l: "Journey Management", r: ["service", "pm", "ba", "stake"] },
   { id: "slack", l: "Slack Bot", r: ["all"] },
-  { id: "cost", l: "Cost", r: ["all"] },
   { id: "bench", l: "Benchmarking", r: ["ux", "service", "pm"] },
   { id: "tools", l: "TheyDo & ZeroHeight", r: ["service", "ux", "pm", "dev"] },
   { id: "next", l: "What's Next", r: ["all"] },
-  { id: "admin", l: "Admin Guide", r: ["all"] },
+  { id: "admin", l: "Administering the System", r: ["all"] },
 ];
 
 const ff = "'DM Sans',system-ui,sans-serif";
@@ -321,7 +320,6 @@ function SlackV({ go }) {
   <P s={{ fontSize: 14, color: T.light }}>This setup requires a developer or someone comfortable with Terminal, GitHub, and environment variables.</P>
   <Nav prev={SS[7]} next={SS[9]} go={go} /></div>; }
 
-function CostV({ go }) { const items = [{ l: "Claude Pro", v: "$20/mo", c: T.navy }, { l: "Figma", v: "Free", c: T.teal }, { l: "GitHub Pages", v: "Free", c: T.teal }, { l: "Hosting", v: "Free", c: T.teal }]; return <div><Tags rs={["all"]} /><H2>Cost</H2><div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, margin: "22px 0" }}>{items.map((x, i) => <div key={i} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 10, padding: "20px 16px", textAlign: "center" }}><div style={{ fontFamily: ff, fontSize: 12, color: T.muted, textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 5 }}>{x.l}</div><div style={{ fontFamily: ff, fontSize: 26, fontWeight: 700, color: x.c }}>{x.v}</div></div>)}</div><P s={{ color: T.muted, fontSize: 15 }}>Plus ~$5–10 in Anthropic API credits for the Slack bot answer synthesis.</P><Nav prev={SS[8]} next={SS[10]} go={go} /></div>; }
 
 function BenchV({ go }) { return <div><Tags rs={["ux", "service", "pm"]} /><H2>Benchmarking — measuring whether changes work</H2>
   <P>Benchmarking is about capturing the state of a product before and after a change, and measuring the difference. This section explains what Claude can automate today, what requires manual steps, and what could be automated with further development.</P>
@@ -372,7 +370,7 @@ function BenchV({ go }) { return <div><Tags rs={["ux", "service", "pm"]} /><H2>B
   ]} />
   <Box type="info" label="Connecting to analytics">The Chrome crawl captures the product state. Analytics platforms capture user behaviour. User testing captures human responses. Today these are combined manually by pasting exports into Claude. With API development, the analytics and crawl steps could be automated — but the user testing step will always require real participants.</Box>
   <Box type="future" label="Automated benchmarking pipeline">With development investment, scheduled Chrome crawls and analytics API connections could create an always-on benchmarking system. Changes in production — even unplanned ones — would be detected automatically, compared against the last known state, and flagged in Slack. This requires a developer to build the scheduling and API layer.</Box>
-  <Nav prev={SS[9]} next={SS[11]} go={go} /></div>; }
+  <Nav prev={SS[8]} next={SS[10]} go={go} /></div>; }
 
 function ToolsV({ go }) { return <div><Tags rs={["service", "ux", "pm", "dev"]} /><H2>TheyDo & ZeroHeight</H2>
   <P>Two enterprise platforms are being considered for the next financial year: TheyDo for journey management and ZeroHeight for design system documentation. Both are purpose-built for the problems the custom applications in this case study were designed to solve — but at an organisation-wide scale with governance, collaboration, and integrations that custom-built tools can't match.</P>
@@ -418,50 +416,36 @@ function ToolsV({ go }) { return <div><Tags rs={["service", "ux", "pm", "dev"]} 
   ]} />
   <P>The custom-built applications from this case study would still serve a purpose — as the fast-publish, Claude-integrated layer for rapid iteration. TheyDo and ZeroHeight become the enterprise-grade layer for governance, collaboration, and organisation-wide visibility.</P>
 
-  <Nav prev={SS[10]} next={SS[12]} go={go} /></div>; }
+  <Nav prev={SS[9]} next={SS[11]} go={go} /></div>; }
 
-function NextV({ go }) { return <div><Tags rs={["all"]} /><H2>What's next — enterprise evaluation</H2><P>The system works end to end. Next steps:</P><Bul items={["Load API credits for the Slack bot", "Demo the workflow to the team", "Iterate on interfaces based on feedback"]} /><H3>Enterprise additions</H3><Bul items={["Miro alongside FigJam — richer workshop facilitation", "Jira connectivity — pull user stories, create tickets from specs, cross-reference pain points against backlog", "TheyDo for organisation-wide journey management (see TheyDo & ZeroHeight)", "ZeroHeight for governed design system documentation (see TheyDo & ZeroHeight)", "Connector approvals managed by IT", "Audit logging — full trail of what Claude accessed", "Data governance and retention policies"]} /><P>The underlying technology is identical to what was tested. The governance layer is what changes.</P><Box type="future" label="User testing integration">If Askable or UserTesting.com build MCP connectors, the prototype → test → analyse → update loop becomes fully automated. Claude pushes test plans to the platform and pulls results back into the journey management system.</Box><Nav prev={SS[11]} next={SS[13]} go={go} /></div>; }
+function NextV({ go }) { return <div><Tags rs={["all"]} /><H2>What's next — enterprise evaluation</H2><P>The system works end to end. Next steps:</P><Bul items={["Load API credits for the Slack bot", "Demo the workflow to the team", "Iterate on interfaces based on feedback"]} /><H3>Enterprise additions</H3><Bul items={["Miro alongside FigJam — richer workshop facilitation", "Jira connectivity — pull user stories, create tickets from specs, cross-reference pain points against backlog", "TheyDo for organisation-wide journey management (see TheyDo & ZeroHeight)", "ZeroHeight for governed design system documentation (see TheyDo & ZeroHeight)", "Connector approvals managed by IT", "Audit logging — full trail of what Claude accessed", "Data governance and retention policies"]} /><P>The underlying technology is identical to what was tested. The governance layer is what changes.</P><Box type="future" label="User testing integration">If Askable or UserTesting.com build MCP connectors, the prototype → test → analyse → update loop becomes fully automated. Claude pushes test plans to the platform and pulls results back into the journey management system.</Box><Nav prev={SS[10]} next={SS[12]} go={go} /></div>; }
 
 function AdminV({ go }) {
+  const costItems = [{ l: "Claude Pro", v: "$20/mo", c: T.navy }, { l: "Figma", v: "Free", c: T.teal }, { l: "GitHub Pages", v: "Free", c: T.teal }, { l: "Render / Hosting", v: "Free", c: T.teal }, { l: "Slack", v: "Free", c: T.teal }];
   return <div>
     <Tags rs={["all"]} />
-    <H2>Admin Guide: Common Prompts & Workflows</H2>
-    <P>This section documents the day-to-day operations of the system — the specific workflows an admin uses to keep the design system current, push research findings, communicate updates, and make the most of the tools available. Each workflow is described at a level of detail that gives you enough context to know what to prompt and what to expect.</P>
+    <H2>Administering the System</H2>
+    <P>The system is administered through Claude Pro and Claude Code. Each section of this case study includes detailed instructions for how to use each specific tool — Chrome scanning, Figma design, prototyping, Slack bot queries, and more. This section covers the ongoing admin tasks: sending team updates, managing costs, and maintaining the system.</P>
 
-    <H3>1. Updating the Design System via Claude Code</H3>
-    <P>When a designer finishes work in Figma and a new component or update is ready to publish, open Claude Code in the <code style={{ background: "#eee", padding: "2px 6px", borderRadius: 4, fontSize: 14 }}>design-system-site</code> folder and describe what changed in plain language. For example: <em>"I've added a new Date Picker component to the RAA Web product. It has 3 variants: Default, With Time, and Date Range. The properties are: selected date (string), placeholder text (string), disabled (boolean), and error state (boolean). The visual is in this Figma frame: [URL]."</em> Claude Code reads the Figma frame, creates the JSON entry in <code style={{ background: "#eee", padding: "2px 6px", borderRadius: 4, fontSize: 14 }}>data/components.json</code>, pulls a visual preview image, and pushes everything to GitHub Pages. The changelog updates automatically via git hooks on every push — no manual changelog editing needed.</P>
+    <H3>Sending Design & Research Updates</H3>
+    <P>Use Claude Pro to draft updates for the <strong>#exd-design-research-updates</strong> Slack channel. Claude reads the changelogs from both the design system and journey management GitHub repos and summarises what's changed. Copy this prompt into Claude Pro:</P>
+    <Prompt text={`Read the design system changelog at https://raw.githubusercontent.com/asmithdigital/design-system-site/main/data/components.json (check the changelog array in each component, pattern, and template) and the journey management changelog at https://raw.githubusercontent.com/asmithdigital/journey-management-site/main/public/data/index.json (check the changelog array, plus each journey file's changelog). Summarise all changes since [DATE]. Group by Design System and Research. Format as a short Slack post with emoji markers for the #exd-design-research-updates channel. Show me the draft before I post it.`} />
+    <P>Replace <code style={{ background: "#eee", padding: "2px 6px", borderRadius: 4, fontSize: 14 }}>[DATE]</code> with the date of your last update. Claude will fetch the latest data and draft the message.</P>
 
-    <H3>2. Updating Journey Data via Claude Code</H3>
-    <P>After a research session produces new insights, open Claude Code in the <code style={{ background: "#eee", padding: "2px 6px", borderRadius: 4, fontSize: 14 }}>journey-management-site</code> folder and describe what was found. For example: <em>"We ran a usability test on the Claims journey with 8 participants. Here are 4 new pain points: users can't find the document upload step (severity: high), the confirmation email doesn't arrive for 20+ minutes (severity: high), the status tracker only updates once a day (severity: medium), and the excess payment step is confusing without a plain-language explanation (severity: medium). Here are 2 new insights: participants expected a live chat option during the process, and all participants checked their email within 5 minutes of submitting."</em> Claude Code adds the pain points and insights to the journey JSON, scores them, and pushes to GitHub Pages. Changelogs update automatically.</P>
+    <H3>Sending System Changelog Updates</H3>
+    <P>For the <strong>#ux-ai-system-changelog</strong> channel, describe what you've changed in the system itself and ask Claude to format it:</P>
+    <Prompt text={`Here's what changed in the UX AI system this week:\n- [describe change 1]\n- [describe change 2]\n- [describe change 3]\nFormat this as a short technical changelog for Slack with emoji markers for the #ux-ai-system-changelog channel.`} />
 
-    <H3>3. Sending Updates to Slack</H3>
-    <P>Periodically — weekly or at the end of a sprint — prompt Claude Pro to draft a summary for the <strong>#exd-design-research-updates</strong> channel. Paste in the changelogs from both the design system and journey management GitHub repos (or share the repo URLs) and ask: <em>"Read these two changelogs and draft a short Slack update summarising what's new this week for the EXD team."</em> Claude reads both sources and produces a formatted summary covering new components, token changes, new journey insights, and resolved pain points. Review it, edit if needed, and post. For the <strong>#ux-ai-system-changelog</strong> channel, write a brief description of any system changes — new connectors, bot improvements, workflow updates — and ask Claude to format it as a clean Slack message with appropriate structure.</P>
+    <H3>Cost & Credits</H3>
+    <P>The system runs on free tiers and a single $20/month Claude Pro subscription. The only additional spend is Anthropic API credits for the Slack bot's answer synthesis — loaded separately at console.anthropic.com.</P>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 12, margin: "18px 0 10px" }}>{costItems.map((x, i) => <div key={i} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 10, padding: "18px 14px", textAlign: "center" }}><div style={{ fontFamily: ff, fontSize: 11.5, color: T.muted, textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 5 }}>{x.l}</div><div style={{ fontFamily: ff, fontSize: 22, fontWeight: 700, color: x.c }}>{x.v}</div></div>)}</div>
+    <P s={{ color: T.muted, fontSize: 15 }}>Plus ~$5–10 in Anthropic API credits to get the Slack bot started, then roughly $1–2/month at 20–50 queries per day.</P>
 
-    <H3>4. Scanning Figma with Claude in Chrome</H3>
-    <P>To bring design data into the system without using Figma MCP connector calls, open the Figma file in Chrome and use Claude in Chrome (the browser extension side panel) to describe what you see. Ask Claude to extract component properties, screen layouts, spacing values, or colour tokens from the visual directly. For example: <em>"Look at the Date Picker component visible on screen. List all its variants, properties, and the colour values used for the border, background, and selected state."</em> Claude reads the design visually and produces a structured description. You then copy that output and paste it into a Claude Code session to create or update the JSON entry in the design system — no Figma API calls consumed. This approach is particularly useful when the monthly MCP call limit is low or when doing a quick audit of an existing file.</P>
-
-    <H3>5. Generating Prototypes and Running Tests</H3>
-    <P>Claude Pro can generate interactive HTML prototypes directly from design system data and journey research. Describe the journey or feature you want to prototype — referencing specific pain points from the journey management app and components from the design system — and ask Claude to generate a fully interactive HTML file. Claude produces working form fields, navigation, and styling. Publish it to GitHub Pages via Claude Code as a shareable link. A/B test plans can be generated alongside the prototype: ask Claude to produce a control variant (without the new feature) and a between-subjects test plan with task scenarios, success metrics, and a Ship/Iterate/Kill decision framework. In the future, this workflow connects directly to Askable or UserTesting.com via MCP, pushing test plans to the platform without manual setup — neither platform has an MCP connector yet, but both have APIs that make this technically feasible.</P>
-
-    <H3>6. Querying via the Slack Bot</H3>
-    <P>Team members — designers, developers, product managers, BAs, and stakeholders — can query <strong>@UX Assistant</strong> in the <strong>#ux-requests</strong> channel at any time. The bot searches the design system JSON, journey management JSON, and Figma files, then synthesises an answer within about 30 seconds. It also returns images: component PNGs from Figma, journey map screenshots from FigJam, and charts generated from journey data. Example queries that work well:</P>
-    <Bul items={[
-      '"What form components do we have?" — returns a list of matching components with variants and usage notes',
-      '"What are the highest severity insights in the Claims journey?" — returns scored pain points with sources',
-      '"Show me the Button component" — returns a PNG from Figma alongside variant and property information',
-      '"What do we know about claims?" — aggregates journey data, Chrome observations, and research notes into a summary',
-      '"What changed in the design system this week?" — diffs the current Figma file against the last published JSON',
-      '"I need to design a better document upload step — what do we know?" — returns context plus a ready-to-paste prompt for Claude Desktop'
-    ]} />
-
-    <H3>7. Using Claude Code for Front-End Development</H3>
-    <P>Claude Code can generate production-ready front-end code directly from design system components and Figma screens. A developer (or designer comfortable with the terminal) describes what they need, and Claude Code generates React components or HTML/CSS using the correct design system tokens, spacing values, and component structures. For example, pushing the Taskly prototype to production: <em>"Read the Create Account screen in this Figma file: [URL]. Use the design system tokens from data/tokens.json. Generate a React component with full form validation and matching styles. Create a branch, commit, and open a pull request."</em> Claude handles the code generation, Git commands, and PR creation. A developer reviews the code before it merges — nothing reaches the main codebase without human approval. In the future, the design system documentation will include code references per component, showing how each component is implemented across each product codebase, so Claude Code has direct access to existing patterns rather than generating from scratch.</P>
-
-    <Nav prev={SS[12]} go={go} />
+    <Nav prev={SS[11]} go={go} />
   </div>;
 }
 
-const VM = { intro: Intro, chrome: ChromeV, figma: FigmaV, figjam: FigJamV, proto: ProtoV, code: CodeV, ds: DSV, jm: JMV, slack: SlackV, cost: CostV, bench: BenchV, tools: ToolsV, next: NextV, admin: AdminV };
+const VM = { intro: Intro, chrome: ChromeV, figma: FigmaV, figjam: FigJamV, proto: ProtoV, code: CodeV, ds: DSV, jm: JMV, slack: SlackV, bench: BenchV, tools: ToolsV, next: NextV, admin: AdminV };
 
 export default function App() {
   const [av, setAv] = useState("intro");
