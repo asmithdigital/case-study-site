@@ -218,6 +218,7 @@ function JMV({ go }) { return <div><Tags rs={["service", "pm", "ba", "stake"]} /
   <P>The designer copies the output and hands it to whoever manages the repos. That person pastes it into Claude Code, which updates the correct journey JSON files, appends changelog entries, commits, and pushes. The site rebuilds automatically.</P>
   <Box type="info" label="Why a manual step?">The design system can sync automatically because Figma has a structured API — components are well-defined objects with names and properties. Research data is unstructured — transcripts, notes, Miro boards, observations. Someone needs to decide what's relevant before it enters the platform. This prompt minimises that step to a single copy-paste, but the human checkpoint stays.</Box>
   <Box type="future" label="UserTesting MCP">UserTesting is running a beta on an MCP connector that could push structured test results (insights, severity scores, quotes) directly into the workflow. If the MCP delivers structured data, it would replace the manual paste step for usability testing results. We're evaluating this with the UserTesting team. See the Slack bot section for how test data flows through the system once it's in the platform.</Box>
+  <Box type="info" label="Benchmarking">UX benchmarking studies and Chrome scan comparisons feed into this same platform. Each journey's metrics pull live from benchmarking data — click a metric to see the trend over time. A dedicated benchmarking dashboard shows detailed charts, study rounds, and Chrome scan diffs for each product. <button onClick={() => go("bench")} style={{ background: "none", border: "none", color: T.teal, fontFamily: ff, fontSize: 15, fontWeight: 500, cursor: "pointer", padding: 0, textDecoration: "underline" }}>Read more about benchmarking →</button></Box>
   <Box type="future" label="TheyDo">When TheyDo is approved, researchers would log insights directly into the platform through its native interface. The end-of-session prompt would be replaced by TheyDo's own data entry. Claude could still help process raw research into structured insights, but the output would go into TheyDo rather than JSON files.</Box>
   <Box type="future" label="Jira integration (enterprise)">Journey pain points could be cross-referenced against Jira tickets automatically. BAs could see which problems have been addressed and which need new tickets.</Box>
 
@@ -236,7 +237,7 @@ function SlackV({ go }) {
   </div>;
 
   return <div><Tags rs={["all"]} /><H2>Slack bot — making it all queryable</H2>
-  <P>The Slack bot is the most widely useful part of this system. While the design and research tools are used by EXD, the bot is for everyone — Product Managers, Engineers, Stakeholders, and anyone else who needs answers from design and research data without opening Figma, navigating a repo, or waiting for a designer. It runs 24/7 whether or not anyone in EXD is online.</P>
+  <P>The Slack bot is the most widely useful part of this system. While the design and research tools are used by EXD, the bot is for everyone — Product Managers, Engineers, Stakeholders, and anyone else who needs answers from design and research data without opening Figma, navigating a repo, or waiting for a designer. It runs 24/7 whether or not anyone in EXD is online. The bot also surfaces benchmarking data — anyone can ask about the latest UX benchmark scores or Chrome scan results for any product.</P>
 
   <H3>How it works</H3>
   <P>Tag <strong>@UX Assistant</strong> in <strong>#ux-requests</strong>. Within 2 seconds: acknowledgement. Within 30 seconds: a synthesised answer in the thread, pulled from Figma, FigJam, the design system JSON, and the journey management data.</P>
@@ -246,11 +247,13 @@ function SlackV({ go }) {
     { ask: "What pain points have we documented in the sign-up journey?", returns: "Returns pain points from journey JSON with severity scores, sources, and related stages" },
     { ask: "Do we have a component for a progress stepper?", returns: "Searches design system JSON and Figma, returns matching components with variants and usage guidelines" },
     { ask: "What opportunities have been prioritised for the next sprint?", returns: "Returns opportunities scored by impact and effort from journey data" },
+    { ask: "What are the latest QTB benchmarking results?", returns: "Returns latest UX benchmark round with all four metrics, confidence intervals, trend vs previous round, and significant findings" },
   ]} />
   <QCard role="Engineers" roleBg="#dbeafe" roleColor="#1e40af" queries={[
     { ask: "What are the colour tokens for form inputs?", returns: "Returns exact hex values, token names, and usage context from design system JSON" },
     { ask: "What props does the Button component have?", returns: "Returns component spec — variants, props, sizing, and spacing values" },
     { ask: "What font stack are we using for headings?", returns: "Returns typography tokens with sizes, weights, and line heights" },
+    { ask: "Has the QTB flow changed since the last Chrome scan?", returns: "Compares latest Chrome scan against previous — screens added/removed, new friction points, accessibility regressions" },
   ]} />
   <QCard role="Stakeholders" roleBg="#f3f4f6" roleColor="#374151" queries={[
     { ask: "What do we know about why users drop off before seeing a price?", returns: "Aggregates insights from journey data, Chrome findings, and research notes into a summary" },
@@ -337,55 +340,99 @@ function SlackV({ go }) {
   <Nav prev={SS[7]} next={SS[9]} go={go} /></div>; }
 
 
-function BenchV({ go }) { return <div><Tags rs={["ux", "service", "pm"]} /><H2>Benchmarking — measuring whether changes work</H2>
-  <P>Benchmarking is about capturing the state of a product before and after a change, and measuring the difference. This section explains what Claude can automate today, what requires manual steps, and what could be automated with further development.</P>
-  <H3>What Claude can do now</H3>
-  <P>Claude's Chrome scanning captures a detailed product state — every screen, form field, friction point, and step count. This works as a baseline before a change and a comparison after. The diff between them shows what changed at the product level.</P>
+function BenchV({ go }) { return <div><Tags rs={["ux", "service", "pm"]} /><H2>Benchmarking — measuring whether design changes work</H2>
+  <P>Benchmarking is the practice of measuring a product experience before and after a change, using the same test, to show whether the change made things better. There are two types in this system: <strong>UX benchmarking studies</strong> (quantitative research with real participants) and <strong>Chrome scan comparisons</strong> (automated product state diffs). Both feed into the journey management platform and are queryable through the Slack bot.</P>
+
+  <H3>How it fits the workflow</H3>
+  <P><strong>UX Designers</strong> and <strong>Service Designers</strong> define what to measure before a design change starts — not after it ships. <strong>BAs</strong> provide analytics baselines (funnel metrics, drop-off rates) that complement the UX benchmark data. <strong>Product Managers</strong> use the before/after comparison to decide whether to iterate further, ship as-is, or roll back. Benchmarking sits in Phase 5 (Test & Validate) of the End-to-End Workflow and also appears as a quarterly drift check in Phase 1 (Input & Planning) when monitoring delivered products.</P>
+
+  <H3>Two types of benchmarking</H3>
+
+  <Label>Type 1 — UX benchmarking studies</Label>
+  <P>A UX benchmarking study is quantitative usability research. Unlike qualitative research (where you explore why), benchmarking measures how much — task completion rate, time on task, error rate, and member satisfaction (MSAT). It requires a higher number of participants (30–50 per round) because you need statistical confidence in the numbers.</P>
+  <P>The defining characteristic is that it is <strong>longitudinal</strong>. The same test is run at a regular cadence (quarterly, or before/after a delivery cycle) with the exact same tasks, the exact same participant criteria, and the exact same test conditions every time. If you change any of these, the comparison becomes invalid. If the product changes enough that the tasks no longer make sense, you start a new benchmark study — you do not modify the existing one.</P>
+  <P>The four standard UX benchmarking metrics:</P>
   <Bul items={[
-    "Baseline capture — Claude scans the live product through Chrome and documents the full flow. This becomes the \"before\" snapshot, pushed to the journey management app as structured JSON",
-    "Post-change capture — after deployment, the same Chrome scan documents the new flow. Claude can compare the two and generate a diff: what was added, removed, or changed",
-    "Journey map comparison — both snapshots feed into the journey management app, so you can see before/after side by side with scored pain points",
-    "Competitor tracking — the same crawl approach works for monitoring competitor products over time, detecting when they add features or change flows",
-    "Automated reporting — Claude generates a structured comparison showing step reduction, friction points resolved, and new issues introduced"
+    "Task completion rate — what percentage of participants complete all tasks successfully. Higher is better.",
+    "Time on task — average time to complete the task set, in seconds. Lower is better.",
+    "Error rate — percentage of participants who encounter at least one error during the task set. Lower is better.",
+    "MSAT (Member Satisfaction) — post-task satisfaction rating on a 1–5 scale. Higher is better. RAA uses MSAT instead of CSAT because we have members, not customers."
   ]} />
-  <H3>What requires manual steps today</H3>
-  <P>Claude captures the product state, but UX benchmarking also requires two other data sources: analytics data (page views, completion rates, drop-offs, time on task) and user testing data (task completion, satisfaction scores, error rates). Neither of these is connected to Claude automatically.</P>
-  <P>The current manual workflow:</P>
-  <Step n={1} title="Export analytics data" desc="Export a CSV or report from Google Analytics, Amplitude, Hotjar, or whatever analytics platform you use. This gives you the quantitative behaviour data — completion rates, drop-offs, session duration." />
-  <Step n={2} title="Run user testing" desc="Use the A/B test plans generated in the Prototyping section to run moderated or unmoderated tests in Askable or UserTesting.com. This gives you the qualitative human response data — task completion, satisfaction, perceived effort." />
-  <Step n={3} title="Feed everything into Claude" desc="Paste the analytics export and the user testing results into Claude alongside the Chrome crawl data. Claude processes all three sources together and generates updated journey JSON with revised pain points, new severity scores, and evidence tags." />
-  <Step n={4} title="Push to the journey management app" desc="Claude Code pushes the updated JSON. The app rebuilds with the new data. Pain points resolved get marked. New issues get documented. The journey map evolves." />
-  <Step n={5} title="Report the results" desc="Claude generates a comparison summary: before vs after metrics, what improved, what didn't, and recommended next steps. This can be shared directly or fed into TheyDo for formal reporting." />
-  <H3>What could be automated with development work</H3>
-  <P>The manual steps above could be reduced with API integrations. This would require working with a developer to set up:</P>
+
+  <Box type="navy" label="Statistical significance">All UX benchmarking metrics are reported with 95% confidence intervals (CI). If the confidence intervals of two rounds overlap, the difference is likely not statistically significant — meaning the change you measured could be due to random variation rather than the design change. You need a minimum of 30 participants per round for the confidence intervals to be narrow enough to be useful. Below 30, results become unreliable for decision-making. When reporting results, use p &lt; 0.05 as the threshold — a result is "statistically significant" when there is less than a 5% chance the difference is due to chance.</Box>
+
+  <Label>Type 2 — Chrome scan comparisons</Label>
+  <P>Chrome scan benchmarking uses Claude's Chrome extension to capture the full state of a product flow before and after a delivery cycle. Claude navigates the live product autonomously, documenting every screen, form field, interaction, and friction point. Running the same scan after a change produces a structured diff: screens added or removed, fields changed, steps reduced, new friction introduced.</P>
+  <P>Chrome scan metrics:</P>
   <Bul items={[
-    "Analytics API connection — Claude Code could read directly from Google Analytics or Amplitude APIs on a scheduled basis, pulling completion rates and drop-off data without manual exports. A developer would need to set up the API authentication and a scheduled script.",
-    "Scheduled Chrome crawls — instead of manually triggering crawls, a scheduled job could run Claude through the same product flow weekly or after each deployment, automatically capturing the new state and flagging changes. This would require a server-side script using Claude Code.",
-    "Automated diff and alerting — when a scheduled crawl detects a change (a new screen, a removed field, a different flow), it could automatically push a notification to Slack via the bot, alerting the team without anyone having to ask.",
-    "User testing platform integration — if Askable or UserTesting.com build MCP connectors or open their APIs, test results could flow back into Claude automatically. Neither has this today."
+    "Total screens — number of distinct screens in the flow. Fewer is usually better.",
+    "Total form fields — total inputs across all screens. Fewer means less effort for the user.",
+    "Minimum clicks — fewest clicks to complete the primary task. Lower is better.",
+    "Friction points — identified UX problems (confusing labels, broken flows, unexpected behaviour).",
+    "Accessibility issues — WCAG 2.1 AA violations detected during the scan."
   ]} />
-  <P>All of these are technically possible but none are built. They would require development time to set up the API connections, authentication, and scheduling. The manual workflow works today and is how most teams operate — the automation is an optimisation for later.</P>
-  <H3>How TheyDo fits into benchmarking</H3>
-  <P>If TheyDo is approved, it becomes the enterprise layer for benchmarking data:</P>
+  <P>Chrome scans are particularly useful for catching <strong>drift</strong> — changes made to the product without design involvement. A quarterly scan compares the current live product against the last known state and flags anything that changed, even if no design work was planned.</P>
+
+  <H3>What benchmarking data feeds into</H3>
   <Bul items={[
-    "TheyDo's daily S3 export (enterprise feature) gives Claude Code access to all journey data in a structured Parquet format. Claude could read the S3 bucket, compare against the latest Chrome crawl, and identify discrepancies between what TheyDo says the journey looks like and what the live product actually does.",
-    "TheyDo's Qualtrics integration means survey data from benchmarking studies flows into TheyDo automatically, where it's scored and tagged against journeys. Claude can then read that data via the S3 export to include it in the analysis.",
-    "TheyDo's executive dashboards provide the reporting layer — once benchmarking data is in TheyDo, stakeholders see it in their existing dashboards without needing the custom journey management app.",
-    "The custom journey management app from this case study remains useful as the fast-publish layer — Chrome crawl data and quick research updates go there immediately, while the validated, scored data gets formally published to TheyDo."
+    "Journey management platform — benchmark results are pushed to the same JSON data that powers the journey maps. Metrics appear on journey detail views and are queryable through the platform's benchmarking dashboard.",
+    "Slack bot — anyone can ask 'what are the latest QTB benchmarking results?' and get a structured answer with metrics, trends, and significant findings.",
+    "Journey maps — pain points discovered during benchmarking studies update the journey map severity scores. Chrome scan regressions create new pain points.",
+    "Design decisions — before/after comparisons provide evidence for whether a design change achieved its goal, informing the next iteration or the decision to ship."
   ]} />
-  <P>The limitation is the same as elsewhere: data can come out of TheyDo but can't be pushed in programmatically. The custom app and TheyDo coexist — one is fast and Claude-integrated, the other is governed and enterprise-grade.</P>
-  <H3>Who's involved</H3>
-  <P>Benchmarking touches multiple roles:</P>
+
+  <Label>Case Study</Label>
+  <P>I built a benchmarking dashboard into the journey management platform to demonstrate what UX benchmarking looks like in practice. The dashboard shows three products:</P>
   <Bul items={[
-    "Service Designers and Researchers — own the benchmarking process alongside UX, run Chrome crawls, define success criteria from journey research, process all data sources through Claude, and update journey maps with results",
-    "UX Designers — design the changes being measured, run or review the user testing",
-    "BAs — compare benchmarking results against Jira backlog, identify what to prioritise next",
-    "Product Managers — review the before/after comparison, decide whether to ship, iterate, or kill",
-    "Developers — needed if setting up analytics API connections or scheduled crawl automation",
-    "Stakeholders — consume the comparison reports through the journey management app, TheyDo dashboards, or Slack bot queries"
+    "Quote to Buy — Home Insurance: 3 rounds of UX benchmarking (baseline, post-redesign, quarterly drift check) plus 3 Chrome scan comparisons. The progress bar and pre-fill redesign improved task completion from 58% to 74% (statistically significant, p < 0.01). A quarterly drift check detected a slight regression caused by a new payment method screen added without design review.",
+    "My Account — Policy Management: 1 baseline round showing very poor current state (45% task completion, 2.4/5 MSAT). This becomes the baseline for a future redesign.",
+    "Taskly — Onboarding: 2 rounds showing improvement after a date picker fix and onboarding tooltip (task completion 82% → 91%)."
   ]} />
-  <Box type="info" label="Connecting to analytics">The Chrome crawl captures the product state. Analytics platforms capture user behaviour. User testing captures human responses. Today these are combined manually by pasting exports into Claude. With API development, the analytics and crawl steps could be automated — but the user testing step will always require real participants.</Box>
-  <Box type="future" label="Automated benchmarking pipeline">With development investment, scheduled Chrome crawls and analytics API connections could create an always-on benchmarking system. Changes in production — even unplanned ones — would be detected automatically, compared against the last known state, and flagged in Slack. This requires a developer to build the scheduling and API layer.</Box>
+  <P>Each product's dashboard shows line charts with confidence interval bands for all four UX metrics, a timeline of study rounds with significant findings, and Chrome scan comparisons with before/after diffs. The journey map detail panels pull live from the benchmarking data — clicking a metric shows the trend and links through to the full dashboard.</P>
+  <CaseLink title="Live — Benchmarking Dashboard" desc="UX benchmarking studies, Chrome scan comparisons, and trend charts for QTB, My Account, and Taskly." url="https://asmithdigital.github.io/journey-management-site/#/benchmarking" />
+  <CaseLink title="Live — Journey Management Platform" desc="Journey maps now pull metrics from benchmarking data. Click a metric to see trends and link to the dashboard." url="https://asmithdigital.github.io/journey-management-site/" />
+  <CaseLink title="GitHub Repo" desc="View the benchmarking JSON data structure, dashboard components, and journey integration." url="https://github.com/asmithdigital/journey-management-site" />
+
+  <Label>How to Use It</Label>
+  <P>Benchmarking data is pushed to the journey management platform the same way research data is — through Claude Code. After running a benchmarking study or Chrome scan, paste the results into Claude Pro with this prompt:</P>
+  <Prompt text={`Here are the results from UX benchmarking round [N] for [product name]:
+
+[PASTE RAW RESULTS — task completion rates, time on task,
+error counts, satisfaction scores, participant count,
+any notable observations or quotes]
+
+Process these into the benchmarking JSON format used in
+the journey management platform. Include:
+- All four metrics with 95% confidence intervals
+- Significant findings (3-5 bullet points)
+- Comparison to the previous round with change direction
+- Whether differences are statistically significant
+
+Output the exact Claude Code command to push this update
+to the journey-management-site repo.`} />
+  <P>For Chrome scan comparisons:</P>
+  <Prompt text={`I've just run a Chrome scan of the live [product name] flow.
+Here's what Claude documented: [PASTE SCAN OUTPUT]
+
+Compare this against the previous scan stored in
+benchmarking.json for product [product-id].
+
+Generate a comparison entry with:
+- Metrics diff (screens, fields, clicks, friction, a11y)
+- What changed: screens added/removed, fields changed
+- Resolved frictions and new frictions
+- Whether any changes were made without design review
+
+Output the Claude Code command to push the update.`} />
+
+  <Label>Setup</Label>
+  <P>Benchmarking data lives in <code style={{ fontFamily: 'monospace', fontSize: 13, background: '#f0ede6', padding: '2px 6px', borderRadius: 4 }}>public/data/benchmarking.json</code> in the journey-management-site repo. The data structure supports multiple products, each with UX benchmarking rounds and Chrome scan entries. The dashboard reads this file directly — push an update to the JSON and the dashboard rebuilds.</P>
+  <P>For Chrome scans, use the Claude Desktop app with the Chrome extension enabled. For UX benchmarking studies, set up unmoderated tests on UserTesting.com with the same 4 tasks for each product. Run at the agreed cadence (quarterly for production products, after each iteration for demo products).</P>
+
+  <Box type="amber" label="Don't change the test">The most common mistake in UX benchmarking is changing the tasks between rounds. Even small changes — rewording a task, changing the order, adjusting the participant criteria — invalidate the comparison. If someone asks to change the test, start a new benchmark study instead. Keep the old one as a closed dataset.</Box>
+
+  <Box type="future" label="Automated benchmarking with UserTesting MCP">When UserTesting's MCP connector is available, the entire benchmarking cycle could be automated: Claude pushes the test plan to UserTesting at the scheduled cadence, waits for results, pulls the data back via API, processes it into the benchmarking JSON, and pushes to the platform. The designer sets up the first study and the cadence — after that, it runs itself. Chrome scan comparisons could be scheduled similarly via a GitHub Action that triggers Claude to scan the product weekly and flag changes in Slack.</Box>
+
   <Nav prev={SS[8]} next={SS[10]} go={go} /></div>; }
 
 function ToolsV({ go }) { return <div><Tags rs={["service", "ux", "pm", "dev"]} /><H2>TheyDo & ZeroHeight</H2>
