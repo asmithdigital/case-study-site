@@ -19,6 +19,7 @@ const SS = [
   { id: "jm", l: "Journey Management", r: ["service", "pm", "ba", "stake"] },
   { id: "slack", l: "Slack Bot", r: ["all"] },
   { id: "bench", l: "Benchmarking", r: ["ux", "service", "pm"] },
+  { id: "metrics", l: "Metrics & Analytics", r: ["pm", "ba", "stake", "ux", "service"] },
   { id: "tools", l: "TheyDo & ZeroHeight", r: ["service", "ux", "pm", "dev"] },
   { id: "next", l: "What's Next", r: ["all"] },
   { id: "admin", l: "Administering the System", r: ["all"] },
@@ -74,6 +75,26 @@ function ChromeV({ go }) { return <div><Tags rs={["ux", "service", "pm"]} /><H2>
   <Prompt text={`Walk through the live [product name] flow in Chrome.\nCompare what you see against this FigJam journey map:\n[FigJam URL]\n\nIdentify any screens or steps that have changed since\nthe journey map was last updated.`} />
   <P>For competitor analysis:</P>
   <Prompt text={`Open these three competitor sites in separate tabs:\n[URL 1], [URL 2], [URL 3]\n\nCompare their pricing pages — layout, plan structure,\nhow they present features. Summarise the differences.`} />
+
+  <Label>Generating benchmarking data from Chrome scans</Label>
+  <P>After running a Chrome scan of a live product flow, the scan output can be processed into benchmarking data. This captures the product state metrics (screen count, form fields, click count, friction points, accessibility issues) that form the Chrome scan comparison type of UX benchmarking.</P>
+  <Prompt text={`I've just scanned the live [product name] flow using Claude in Chrome.
+Here's the full scan output: [PASTE SCAN OUTPUT]
+
+Process this into a Chrome scan benchmarking entry for
+the journey management platform. Calculate:
+- Total screens in the flow
+- Total form fields across all screens
+- Minimum clicks to complete the primary task
+- Friction points identified
+- Accessibility issues detected
+
+If there's a previous scan for this product in
+benchmarking.json, generate a comparison entry showing
+what changed. Flag any changes made without design review.
+
+Output the Claude Code command to push the update.`} />
+  <P>This prompt works with the Chrome scan comparison type described on the <button onClick={() => go("bench")} style={{ background: "none", border: "none", color: T.teal, fontFamily: ff, fontSize: 15, fontWeight: 500, cursor: "pointer", padding: 0, textDecoration: "underline" }}>benchmarking page</button>.</P>
 
   <Label>Setup</Label>
   <P><strong>Chrome extension:</strong> Go to the Chrome Web Store → search "Claude" by Anthropic → Add to Chrome → pin the extension → sign in with your Anthropic account.</P>
@@ -218,7 +239,7 @@ function JMV({ go }) { return <div><Tags rs={["service", "pm", "ba", "stake"]} /
   <P>The designer copies the output and hands it to whoever manages the repos. That person pastes it into Claude Code, which updates the correct journey JSON files, appends changelog entries, commits, and pushes. The site rebuilds automatically.</P>
   <Box type="info" label="Why a manual step?">The design system can sync automatically because Figma has a structured API — components are well-defined objects with names and properties. Research data is unstructured — transcripts, notes, Miro boards, observations. Someone needs to decide what's relevant before it enters the platform. This prompt minimises that step to a single copy-paste, but the human checkpoint stays.</Box>
   <Box type="future" label="UserTesting MCP">UserTesting is running a beta on an MCP connector that could push structured test results (insights, severity scores, quotes) directly into the workflow. If the MCP delivers structured data, it would replace the manual paste step for usability testing results. We're evaluating this with the UserTesting team. See the Slack bot section for how test data flows through the system once it's in the platform.</Box>
-  <Box type="info" label="Benchmarking">UX benchmarking studies and Chrome scan comparisons feed into this same platform. Each journey's metrics pull live from benchmarking data — click a metric to see the trend over time. A dedicated benchmarking dashboard shows detailed charts, study rounds, and Chrome scan diffs for each product. <button onClick={() => go("bench")} style={{ background: "none", border: "none", color: T.teal, fontFamily: ff, fontSize: 15, fontWeight: 500, cursor: "pointer", padding: 0, textDecoration: "underline" }}>Read more about benchmarking →</button></Box>
+  <Box type="info" label="Benchmarking">UX benchmarking studies, member research metrics (NPS, MSAT, BOS), and Google Analytics data all feed into this platform. Each journey's metrics pull live from the data — UX metrics at the product level, member research at the top level, and analytics at the stage level in a dedicated swim lane. A unified metrics dashboard shows everything together. <button onClick={() => go("bench")} style={{ background: "none", border: "none", color: T.teal, fontFamily: ff, fontSize: 15, fontWeight: 500, cursor: "pointer", padding: 0, textDecoration: "underline" }}>Read more about benchmarking →</button>{' '}<button onClick={() => go("metrics")} style={{ background: "none", border: "none", color: T.teal, fontFamily: ff, fontSize: 15, fontWeight: 500, cursor: "pointer", padding: 0, textDecoration: "underline" }}>Read about metrics & analytics →</button></Box>
   <Box type="future" label="TheyDo">When TheyDo is approved, researchers would log insights directly into the platform through its native interface. The end-of-session prompt would be replaced by TheyDo's own data entry. Claude could still help process raw research into structured insights, but the output would go into TheyDo rather than JSON files.</Box>
   <Box type="future" label="Jira integration (enterprise)">Journey pain points could be cross-referenced against Jira tickets automatically. BAs could see which problems have been addressed and which need new tickets.</Box>
 
@@ -353,10 +374,10 @@ function BenchV({ go }) { return <div><Tags rs={["ux", "service", "pm"]} /><H2>B
   <P>The defining characteristic is that it is <strong>longitudinal</strong>. The same test is run at a regular cadence (quarterly, or before/after a delivery cycle) with the exact same tasks, the exact same participant criteria, and the exact same test conditions every time. If you change any of these, the comparison becomes invalid. If the product changes enough that the tasks no longer make sense, you start a new benchmark study — you do not modify the existing one.</P>
   <P>The four standard UX benchmarking metrics:</P>
   <Bul items={[
-    "Task completion rate — what percentage of participants complete all tasks successfully. Higher is better.",
-    "Time on task — average time to complete the task set, in seconds. Lower is better.",
-    "Error rate — percentage of participants who encounter at least one error during the task set. Lower is better.",
-    "MSAT (Member Satisfaction) — post-task satisfaction rating on a 1–5 scale. Higher is better. RAA uses MSAT instead of CSAT because we have members, not customers."
+    <><strong>Task completion rate</strong> — what percentage of participants complete all tasks successfully. Higher is better.</>,
+    <><strong>Time on task</strong> — average time to complete the task set, in seconds. Lower is better.</>,
+    <><strong>Error rate</strong> — percentage of participants who encounter at least one error during the task set. Lower is better.</>,
+    <><strong>MSAT (Member Satisfaction)</strong> — post-task satisfaction rating on a 1–5 scale. Higher is better. RAA uses MSAT instead of CSAT because we have members, not customers.</>
   ]} />
 
   <Box type="navy" label="Statistical significance">All UX benchmarking metrics are reported with 95% confidence intervals (CI). If the confidence intervals of two rounds overlap, the difference is likely not statistically significant — meaning the change you measured could be due to random variation rather than the design change. You need a minimum of 30 participants per round for the confidence intervals to be narrow enough to be useful. Below 30, results become unreliable for decision-making. When reporting results, use p &lt; 0.05 as the threshold — a result is "statistically significant" when there is less than a 5% chance the difference is due to chance.</Box>
@@ -365,11 +386,11 @@ function BenchV({ go }) { return <div><Tags rs={["ux", "service", "pm"]} /><H2>B
   <P>Chrome scan benchmarking uses Claude's Chrome extension to capture the full state of a product flow before and after a delivery cycle. Claude navigates the live product autonomously, documenting every screen, form field, interaction, and friction point. Running the same scan after a change produces a structured diff: screens added or removed, fields changed, steps reduced, new friction introduced.</P>
   <P>Chrome scan metrics:</P>
   <Bul items={[
-    "Total screens — number of distinct screens in the flow. Fewer is usually better.",
-    "Total form fields — total inputs across all screens. Fewer means less effort for the user.",
-    "Minimum clicks — fewest clicks to complete the primary task. Lower is better.",
-    "Friction points — identified UX problems (confusing labels, broken flows, unexpected behaviour).",
-    "Accessibility issues — WCAG 2.1 AA violations detected during the scan."
+    <><strong>Total screens</strong> — number of distinct screens in the flow. Fewer is usually better.</>,
+    <><strong>Total form fields</strong> — total inputs across all screens. Fewer means less effort for the user.</>,
+    <><strong>Minimum clicks</strong> — fewest clicks to complete the primary task. Lower is better.</>,
+    <><strong>Friction points</strong> — identified UX problems (confusing labels, broken flows, unexpected behaviour).</>,
+    <><strong>Accessibility issues</strong> — WCAG 2.1 AA violations detected during the scan.</>
   ]} />
   <P>Chrome scans are particularly useful for catching <strong>drift</strong> — changes made to the product without design involvement. A quarterly scan compares the current live product against the last known state and flags anything that changed, even if no design work was planned.</P>
 
@@ -381,6 +402,8 @@ function BenchV({ go }) { return <div><Tags rs={["ux", "service", "pm"]} /><H2>B
     "Design decisions — before/after comparisons provide evidence for whether a design change achieved its goal, informing the next iteration or the decision to ship."
   ]} />
 
+  <Box type="info" label="Other metric types">UX benchmarking is one of three metric types in the platform. Member research metrics (NPS, MSAT, BOS) come from Qualtrics and sit at the top-level journey view. Analytics metrics (bounce rate, conversion, drop-off) come from Google Analytics and sit at the stage level. <button onClick={() => go("metrics")} style={{ background: "none", border: "none", color: T.teal, fontFamily: ff, fontSize: 15, fontWeight: 500, cursor: "pointer", padding: 0, textDecoration: "underline" }}>Read about all metric types →</button></Box>
+
   <Label>Case Study</Label>
   <P>I built a benchmarking dashboard into the journey management platform to demonstrate what UX benchmarking looks like in practice. The dashboard shows three products:</P>
   <Bul items={[
@@ -389,7 +412,7 @@ function BenchV({ go }) { return <div><Tags rs={["ux", "service", "pm"]} /><H2>B
     "Taskly — Onboarding: 2 rounds showing improvement after a date picker fix and onboarding tooltip (task completion 82% → 91%)."
   ]} />
   <P>Each product's dashboard shows line charts with confidence interval bands for all four UX metrics, a timeline of study rounds with significant findings, and Chrome scan comparisons with before/after diffs. The journey map detail panels pull live from the benchmarking data — clicking a metric shows the trend and links through to the full dashboard.</P>
-  <CaseLink title="Live — Benchmarking Dashboard" desc="UX benchmarking studies, Chrome scan comparisons, and trend charts for QTB, My Account, and Taskly." url="https://asmithdigital.github.io/journey-management-site/#/benchmarking" />
+  <CaseLink title="Live — Metrics Dashboard" desc="UX benchmarking studies, Chrome scan comparisons, and trend charts for QTB, My Account, and Taskly." url="https://asmithdigital.github.io/journey-management-site/#/metrics-dashboard" />
   <CaseLink title="Live — Journey Management Platform" desc="Journey maps now pull metrics from benchmarking data. Click a metric to see trends and link to the dashboard." url="https://asmithdigital.github.io/journey-management-site/" />
   <CaseLink title="GitHub Repo" desc="View the benchmarking JSON data structure, dashboard components, and journey integration." url="https://github.com/asmithdigital/journey-management-site" />
 
@@ -435,6 +458,86 @@ Output the Claude Code command to push the update.`} />
 
   <Nav prev={SS[8]} next={SS[10]} go={go} /></div>; }
 
+function MetricsV({ go }) { return <div><Tags rs={["pm", "ba", "stake", "ux", "service"]} /><H2>Metrics & Analytics — connecting business data to design decisions</H2>
+  <P>The journey management platform brings together three distinct types of metrics, each from a different source and managed by a different team. Understanding which metrics come from where — and how they connect — is essential for making sense of the data on the platform.</P>
+  <H3>Three types of metrics</H3>
+  <Label>Type 1 — UX Benchmarking Metrics</Label>
+  <P>These are quantitative usability metrics collected through structured UX benchmarking studies. They are managed by the EXD team and uploaded to the platform via Claude Code. The four standard metrics are:</P>
+  <Bul items={[
+    <><strong>Task Completion Rate</strong> — percentage of participants who complete all tasks successfully</>,
+    <><strong>Time on Task</strong> — average time to complete the task set, in seconds</>,
+    <><strong>Error Rate</strong> — percentage of participants who encounter at least one error</>,
+    <><strong>MSAT (Member Satisfaction)</strong> — post-task satisfaction rating on a 1–5 scale</>
+  ]} />
+  <P>UX benchmarking metrics sit at the product and feature level (nested journeys). They appear on the journey map detail view for each specific product like Quote to Buy or My Account. <button onClick={() => go("bench")} style={{ background: "none", border: "none", color: T.teal, fontFamily: ff, fontSize: 15, fontWeight: 500, cursor: "pointer", padding: 0, textDecoration: "underline" }}>Read more about UX benchmarking →</button></P>
+  <Label>Type 2 — Member Research Metrics (Qualtrics)</Label>
+  <P>These are high-level business metrics from market research surveys conducted by the Market Research team. They are collected via Qualtrics and represent the overall member experience — not specific product interactions. The key metrics are:</P>
+  <Bul items={[
+    <><strong>NPS (Net Promoter Score)</strong> — how likely members are to recommend RAA, measured on a -100 to +100 scale</>,
+    <><strong>MSAT (Member Satisfaction — org-wide)</strong> — overall satisfaction with RAA as an organisation, different from the task-level MSAT in UX benchmarking</>,
+    <><strong>BOS (Brand & Offer Score)</strong> — perception of RAA's brand and value proposition relative to competitors</>
+  ]} />
+  <P>These metrics sit at the top-level journey view (RAA Membership, Insurance). They represent the executive-level health of the member experience and are not broken down to the individual product level. They are collected quarterly with large sample sizes (1,500–2,500 respondents per wave).</P>
+  <Label>Type 3 — Analytics Metrics (Google Analytics)</Label>
+  <P>These are behavioural metrics from Google Analytics, managed by the Analytics team. Unlike the other two types, analytics metrics are granular and stage-specific — they track what members actually do at each step of a journey. Examples include:</P>
+  <Bul items={[
+    <><strong>Bounce Rate</strong> — percentage of visitors who leave without interacting</>,
+    <><strong>Conversion Rate</strong> — percentage who complete a key action (e.g. quote to purchase)</>,
+    <><strong>Funnel Drop-off</strong> — where in a multi-step flow members abandon</>,
+    <><strong>Session Duration</strong> — how long members spend in a flow</>,
+    <><strong>Page Views</strong> — volume of traffic at specific stages</>,
+    <><strong>Form Abandonment Rate</strong> — percentage who start but don't submit a form</>
+  ]} />
+  <P>Analytics metrics appear in their own swim lane inside the journey map, placed at the specific stage they measure. Each product and feature tracks different analytics metrics for different reasons — there is no standard set across all journeys.</P>
+  <H3>Where each type appears</H3>
+  <Bul items={[
+    "Top-level journey views (RAA Membership, Insurance): NPS, MSAT (org-wide), BOS from Qualtrics — the executive dashboard view showing overall member experience health",
+    "Nested journey views (Quote to Buy, My Account, Claims): UX benchmarking metrics from EXD, plus stage-level analytics from Google Analytics in a dedicated swim lane",
+    "Metrics dashboard: all three types combined in one view, colour-coded by source — amber for UX benchmarking, blue for member research, teal for analytics"
+  ]} />
+  <H3>How metrics data gets into the platform</H3>
+  <P>Currently, all three metric types are uploaded manually through Claude Code, using the same process as journey research data. The researcher or analyst pastes the raw data into Claude Pro, which processes it into the JSON format and generates the Claude Code command to push it.</P>
+  <Bul items={[
+    "UX benchmarking data: uploaded by the EXD team after each benchmarking study round. See the benchmarking page for the detailed prompt.",
+    "Member research data: uploaded quarterly after each Qualtrics survey wave. The Market Research team provides the CSV export.",
+    "Analytics data: uploaded monthly from Google Analytics exports or dashboards."
+  ]} />
+  <Label>Uploading analytics data</Label>
+  <Prompt text={`Here are the latest Google Analytics metrics for [product name]:
+
+[PASTE GA EXPORT — bounce rates, conversion rates,
+drop-off rates, session durations, page views per stage]
+
+Process these into the analytics JSON format used in
+the journey management platform. Match each metric to
+its stage ID in the journey data. Include 6 months of
+monthly data points.
+
+Output the exact Claude Code command to push this update
+to the journey-management-site repo.`} />
+  <Label>Uploading member research data</Label>
+  <Prompt text={`Here are the latest Qualtrics survey results:
+
+NPS: [score] (sample: [n])
+MSAT: [score] (sample: [n])
+BOS: [score] (sample: [n])
+Survey date: [date]
+
+Add this as a new data point to the member research
+metrics in benchmarking.json. Include the sample size.
+
+Output the exact Claude Code command to push this update
+to the journey-management-site repo.`} />
+  <H3>Future state — API integrations</H3>
+  <P>All three metric types currently require manual upload. In the future, each could be connected via API or MCP:</P>
+  <Box type="future" label="Google Analytics API">Google Analytics has a well-documented REST API. A scheduled script could pull analytics data directly into the platform monthly, eliminating the manual export step. The Analytics team would configure which metrics to track per stage, and the system would update automatically. This requires a developer to set up the API authentication and a GitHub Action for scheduling.</Box>
+  <Box type="future" label="Qualtrics API">Qualtrics provides an API for survey data export. After each quarterly survey wave, the system could pull NPS, MSAT, and BOS scores directly. The Market Research team would still design and run the surveys — only the data transfer would be automated.</Box>
+  <Box type="future" label="TheyDo integration">If TheyDo is approved, it offers native integrations with both Qualtrics and Google Analytics. Metrics would flow into TheyDo's journey management platform directly, and Claude could read them via TheyDo's S3 data export for analysis and reporting.</Box>
+  <Box type="info" label="UX benchmarking stays manual">Unlike analytics and member research, UX benchmarking studies always require human involvement — designing the tasks, recruiting participants, running the sessions. The upload step could be streamlined with a UserTesting MCP connector (see the benchmarking page), but the research itself is always human-led.</Box>
+  <CaseLink title="Live — Metrics Dashboard" desc="All three metric types combined: UX benchmarking, member research, and analytics. Colour-coded by source." url="https://asmithdigital.github.io/journey-management-site/#/metrics-dashboard" />
+  <CaseLink title="Live — Journey Management Platform" desc="See metrics in context on journey maps — analytics in the swim lane, member research at the top level." url="https://asmithdigital.github.io/journey-management-site/" />
+  <Nav prev={SS[9]} next={SS[11]} go={go} /></div>; }
+
 function ToolsV({ go }) { return <div><Tags rs={["service", "ux", "pm", "dev"]} /><H2>TheyDo & ZeroHeight</H2>
   <P>Two enterprise platforms are being considered for the next financial year: TheyDo for journey management and ZeroHeight for design system documentation. Both are purpose-built for the problems the custom applications in this case study were designed to solve — but at an organisation-wide scale with governance, collaboration, and integrations that custom-built tools can't match.</P>
 
@@ -479,9 +582,9 @@ function ToolsV({ go }) { return <div><Tags rs={["service", "ux", "pm", "dev"]} 
   ]} />
   <P>The custom-built applications from this case study would still serve a purpose — as the fast-publish, Claude-integrated layer for rapid iteration. TheyDo and ZeroHeight become the enterprise-grade layer for governance, collaboration, and organisation-wide visibility.</P>
 
-  <Nav prev={SS[9]} next={SS[11]} go={go} /></div>; }
+  <Nav prev={SS[10]} next={SS[12]} go={go} /></div>; }
 
-function NextV({ go }) { return <div><Tags rs={["all"]} /><H2>What's next — enterprise evaluation</H2><P>The system works end to end. Next steps:</P><Bul items={["Load API credits for the Slack bot", "Demo the workflow to the team", "Iterate on interfaces based on feedback"]} /><H3>Enterprise additions</H3><Bul items={["Miro alongside FigJam — richer workshop facilitation", "Jira connectivity — pull user stories, create tickets from specs, cross-reference pain points against backlog", "TheyDo for organisation-wide journey management (see TheyDo & ZeroHeight)", "ZeroHeight for governed design system documentation (see TheyDo & ZeroHeight)", "Connector approvals managed by IT", "Audit logging — full trail of what Claude accessed", "Data governance and retention policies"]} /><P>The underlying technology is identical to what was tested. The governance layer is what changes.</P><Box type="future" label="User testing integration">If Askable or UserTesting.com build MCP connectors, the prototype → test → analyse → update loop becomes fully automated. Claude pushes test plans to the platform and pulls results back into the journey management system.</Box><Nav prev={SS[10]} next={SS[12]} go={go} /></div>; }
+function NextV({ go }) { return <div><Tags rs={["all"]} /><H2>What's next — enterprise evaluation</H2><P>The system works end to end. Next steps:</P><Bul items={["Load API credits for the Slack bot", "Demo the workflow to the team", "Iterate on interfaces based on feedback"]} /><H3>Enterprise additions</H3><Bul items={["Miro alongside FigJam — richer workshop facilitation", "Jira connectivity — pull user stories, create tickets from specs, cross-reference pain points against backlog", "TheyDo for organisation-wide journey management (see TheyDo & ZeroHeight)", "ZeroHeight for governed design system documentation (see TheyDo & ZeroHeight)", "Connector approvals managed by IT", "Audit logging — full trail of what Claude accessed", "Data governance and retention policies"]} /><P>The underlying technology is identical to what was tested. The governance layer is what changes.</P><Box type="future" label="User testing integration">If Askable or UserTesting.com build MCP connectors, the prototype → test → analyse → update loop becomes fully automated. Claude pushes test plans to the platform and pulls results back into the journey management system.</Box><Nav prev={SS[11]} next={SS[13]} go={go} /></div>; }
 
 function AdminV({ go }) {
   const costItems = [{ l: "Claude Pro", v: "$20/mo", c: T.navy }, { l: "Figma", v: "Free", c: T.teal }, { l: "GitHub Pages", v: "Free", c: T.teal }, { l: "Render / Hosting", v: "Free", c: T.teal }, { l: "Slack", v: "Free", c: T.teal }];
@@ -506,11 +609,11 @@ function AdminV({ go }) {
     <div className="cost-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 12, margin: "18px 0 10px" }}>{costItems.map((x, i) => <div key={i} style={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 10, padding: "18px 14px", textAlign: "center" }}><div style={{ fontFamily: ff, fontSize: 11.5, color: T.muted, textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 5 }}>{x.l}</div><div style={{ fontFamily: ff, fontSize: 22, fontWeight: 700, color: x.c }}>{x.v}</div></div>)}</div>
     <P s={{ color: T.muted, fontSize: 15 }}>Plus ~$5–10 in Anthropic API credits to get the Slack bot started, then roughly $1–2/month at 20–50 queries per day.</P>
 
-    <Nav prev={SS[11]} go={go} />
+    <Nav prev={SS[12]} go={go} />
   </div>;
 }
 
-const VM = { intro: Intro, chrome: ChromeV, figma: FigmaV, figjam: FigJamV, proto: ProtoV, code: CodeV, ds: DSV, jm: JMV, slack: SlackV, bench: BenchV, tools: ToolsV, next: NextV, admin: AdminV };
+const VM = { intro: Intro, chrome: ChromeV, figma: FigmaV, figjam: FigJamV, proto: ProtoV, code: CodeV, ds: DSV, jm: JMV, slack: SlackV, bench: BenchV, metrics: MetricsV, tools: ToolsV, next: NextV, admin: AdminV };
 
 export default function App() {
   const [av, setAv] = useState("intro");
